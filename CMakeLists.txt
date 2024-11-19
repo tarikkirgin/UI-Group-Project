@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
 qt_standard_project_setup()
 
-qt_add_executable(quaketool
+qt_add_executable(watertool
     main.cpp
     quake.cpp
     dataset.cpp
@@ -17,9 +17,9 @@ qt_add_executable(quaketool
     stats.cpp
 )
 
-target_link_libraries(quaketool PRIVATE Qt6::Widgets)
+target_link_libraries(watertool PRIVATE Qt6::Widgets)
 
-set_target_properties(quaketool PROPERTIES
+set_target_properties(watertool PROPERTIES
     WIN32_EXECUTABLE ON
     MACOSX_BUNDLE OFF
 )
