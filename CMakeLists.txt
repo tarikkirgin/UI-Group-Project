@@ -10,11 +10,10 @@ qt_standard_project_setup()
 
 qt_add_executable(watertool
     main.cpp
-    quake.cpp
     dataset.cpp
     model.cpp
     window.cpp
-    stats.cpp
+    sample.cpp
 )
 
 target_link_libraries(watertool PRIVATE Qt6::Widgets)

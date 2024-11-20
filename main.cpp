@@ -1,13 +1,10 @@
-// COMP2811 Coursework 2: application entry point
-
-#include <QtWidgets>
 #include "window.hpp"
+#include <QtWidgets>
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char *argv[]) {
   QApplication app(argc, argv);
 
-  QuakeWindow window;
+  TestWindow window;
   window.show();
 
   return app.exec();

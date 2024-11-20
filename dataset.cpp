@@ -1,79 +1,48 @@
-// COMP2811 Coursework 1 sample solution: QuakeDataset class
-
-#include <stdexcept>
-#include <algorithm>
-#include <numeric>
 #include "dataset.hpp"
 #include "csv.hpp"
+#include "sample.hpp"
+#include <QDebug>
+#include <stdexcept>
 
 using namespace std;
 
-
-void QuakeDataset::loadData(const string& filename)
-{
+void Dataset::loadData(const string &filename) {
   csv::CSVReader reader(filename);
 
   data.clear();
 
-  for (const auto& row: reader) {
-    Quake quake{
-      row["time"].get<>(),
-      row["latitude"].get<double>(),
-      row["longitude"].get<double>(),
-      row["depth"].get<double>(),
-      row["mag"].get<double>()
+  for (const auto &row : reader) {
+    SamplingPoint sampling_point{
+        row["sample.samplingPoint.notation"].get<>(),
+        row["sample.samplingPoint.label"].get<>(),
+        row["sample.samplingPoint.northing"].get<int>(),
+        row["sample.samplingPoint.easting"].get<int>()};
+
+    Determinand determinand{
+        row["determinand.label"].get<>(),
+        row["determinand.definition"].get<>(),
+        row["determinand.unit.label"].get<>(),
+        row["determinand.notation"].get<int>(),
     };
-    data.push_back(quake);
+
+    Result result{
+        row["result"].get<double>(),
+        row["resultQualifier.notation"].get<>() == "<",
+    };
+
+    Sample sample{sampling_point,
+                  row["sample.sampleDateTime"].get<>(),
+                  row["sample.purpose.label"].get<>(),
+                  row["sample.sampledMaterialType.label"].get<>(),
+                  row["sample.isComplianceSample"].get<>() == "FALSE",
+                  determinand,
+                  result};
+
+    data.push_back(sample);
   }
 }
 
-
-Quake QuakeDataset::strongest() const
-{
-  checkDataExists();
-
-  auto quake = max_element(data.begin(), data.end(),
-    [](Quake a, Quake b) { return a.getMagnitude() < b.getMagnitude(); });
-
-  return *quake;
-}
-
-
-Quake QuakeDataset::shallowest() const
-{
-  checkDataExists();
-
-  auto quake = min_element(data.begin(), data.end(),
-    [](Quake a, Quake b) { return a.getDepth() < b.getDepth(); });
-
-  return *quake;
-}
-
-
-double QuakeDataset::meanDepth() const
-{
-  checkDataExists();
-
-  auto sum = accumulate(data.begin(), data.end(), 0.0,
-    [](double total, Quake q) { return total + q.getDepth(); });
-
-  return sum / data.size();
-}
-
-
-double QuakeDataset::meanMagnitude() const
-{
-  checkDataExists();
-
-  auto sum = accumulate(data.begin(), data.end(), 0.0,
-    [](double total, Quake q) { return total + q.getMagnitude(); });
-
-  return sum / data.size();
-}
-
-
-void QuakeDataset::checkDataExists() const
-{
+void Dataset::checkDataExists() const {
   if (size() == 0) {
     throw std::runtime_error("Dataset is empty!");
   }
