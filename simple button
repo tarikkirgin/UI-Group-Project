@@ -1,0 +1,30 @@
+#include <QApplication>
+#include <QWidget>
+#include <QHBoxLayout>
+#include <QPushButton>
+
+int main(int argc, char *argv[]) {
+    QApplication app(argc, argv);
+
+    QWidget *window = new QWidget;
+    window->setWindowTitle("QHBoxLayout Test");
+
+
+    QPushButton *button1 = new QPushButton("Button 1");
+    QPushButton *button2 = new QPushButton("Button 2");
+    QPushButton *button3 = new QPushButton("Button 3");
+
+
+    QHBoxLayout *layout = new QHBoxLayout;
+    layout->addWidget(button1);
+    layout->addWidget(button2);
+    layout->addWidget(button3);
+
+
+    window->setLayout(layout);
+
+
+    window->show();
+
+    return app.exec();
+}
