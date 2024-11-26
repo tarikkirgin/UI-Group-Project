@@ -12,7 +12,8 @@ qt_add_executable(watertool
     main.cpp
     dataset.cpp
     model.cpp
-    window.cpp
+    dashboard.cpp
+    dashboard_item.cpp
     sample.cpp
 )
 
