@@ -1,11 +1,11 @@
-#include "window.hpp"
+#include "dashboard.hpp"
 #include <QtWidgets>
 #include <iostream>
 #include <stdexcept>
 
 static const int MIN_WIDTH = 620;
 
-TestWindow::TestWindow() : QMainWindow() {
+Dashboard::Dashboard() : QMainWindow() {
   createMainWidget();
   createToolBar();
   createStatusBar();
@@ -16,28 +16,39 @@ TestWindow::TestWindow() : QMainWindow() {
   setWindowTitle("Water Quality Monitor");
 }
 
-void TestWindow::createMainWidget() {
-  table = new QTableView();
-  table->setModel(&model);
+void Dashboard::createMainWidget() {
+  QWidget *centralWidget = new QWidget(this);
+  setCentralWidget(centralWidget);
 
-  QFont tableFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
-  table->setFont(tableFont);
+  layout = new QVBoxLayout();
 
-  setCentralWidget(table);
+  item1 = new DashboardItem("item 1");
+  item2 = new DashboardItem("item 2");
+  item3 = new DashboardItem("item 3");
+  item4 = new DashboardItem("item 4");
+  item5 = new DashboardItem("item 5");
+
+  layout->addWidget(item1);
+  layout->addWidget(item2);
+  layout->addWidget(item3);
+  layout->addWidget(item4);
+  layout->addWidget(item5);
+
+  centralWidget->setLayout(layout);
 }
 
-void TestWindow::createToolBar() {
+void Dashboard::createToolBar() {
   QToolBar *toolBar = new QToolBar();
   addToolBar(toolBar);
 }
 
-void TestWindow::createStatusBar() {
+void Dashboard::createStatusBar() {
   fileInfo = new QLabel("Current file: <none>");
   QStatusBar *status = statusBar();
   status->addWidget(fileInfo);
 }
 
-void TestWindow::addFileMenu() {
+void Dashboard::addFileMenu() {
   QAction *locAction = new QAction("Open CSV File", this);
   locAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_L));
   connect(locAction, SIGNAL(triggered()), this, SLOT(setDataLocation()));
@@ -51,7 +62,7 @@ void TestWindow::addFileMenu() {
   fileMenu->addAction(closeAction);
 }
 
-void TestWindow::addHelpMenu() {
+void Dashboard::addHelpMenu() {
   QAction *aboutAction = new QAction("&About", this);
   connect(aboutAction, SIGNAL(triggered()), this, SLOT(about()));
 
@@ -63,7 +74,7 @@ void TestWindow::addHelpMenu() {
   helpMenu->addAction(aboutQtAction);
 }
 
-void TestWindow::setDataLocation() {
+void Dashboard::setDataLocation() {
   QString filename = QFileDialog::getOpenFileName(
       this, "Open CSV File", ".", "CSV Files (*.csv);;All Files (*)");
 
@@ -82,10 +93,10 @@ void TestWindow::setDataLocation() {
   this->fileInfo->setText(
       QString("Current file: <kbd>%1</kbd>").arg(fileInfo.fileName()));
 
-  table->resizeColumnsToContents();
+  // table->resizeColumnsToContents();
 }
 
-void TestWindow::about() {
+void Dashboard::about() {
   QMessageBox::about(this, "About Water Quality Monitor",
                      "Water Quality Monitor displays and analyses water "
                      "quality data loaded from"
