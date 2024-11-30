@@ -40,6 +40,8 @@ void Dataset::loadData(const string &filename) {
 
     data.push_back(sample);
   }
+
+  emit dataUpdated();
 }
 
 void Dataset::checkDataExists() const {

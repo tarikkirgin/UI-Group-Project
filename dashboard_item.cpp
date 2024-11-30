@@ -1,20 +1,19 @@
 #include "dashboard_item.hpp"
 #include <QtWidgets>
-#include <iostream>
-#include <stdexcept>
 
-DashboardItem::DashboardItem(const QString &labelText) : QGroupBox() {
+DashboardItem::DashboardItem(const QString &labelText, int pageIndex)
+    : QGroupBox(labelText), pageIndex(pageIndex) {
   createMainWidget(labelText);
 }
 
 void DashboardItem::createMainWidget(const QString &labelText) {
-  layout = new QVBoxLayout();
+  layout = new QVBoxLayout(this);
 
-  name = new QLabel(labelText);
-  layout->addWidget(name);
-
-  button = new QPushButton("Button");
+  button = new QPushButton("Go to page");
   layout->addWidget(button);
 
   this->setLayout(layout);
+
+  connect(button, &QPushButton::clicked,
+          [this]() { emit navigateToPage(pageIndex); });
 }
