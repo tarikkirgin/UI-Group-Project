@@ -1,21 +1,25 @@
 #pragma once
 
 #include <QGroupBox>
-
-class QLabel;
-class QVBoxLayout;
-class QPushButton;
+#include <QPushButton>
+#include <QString>
+#include <QVBoxLayout>
 
 class DashboardItem : public QGroupBox {
   Q_OBJECT
 
 public:
-  DashboardItem(const QString &labelText = "");
+  DashboardItem(const QString &labelText, int pageIndex);
+
+signals:
+  void navigateToPage(int pageIndex);
 
 private:
   void createMainWidget(const QString &labelText);
 
+  int pageIndex;
+
   QVBoxLayout *layout;
-  QLabel *name;
+  QString *name;
   QPushButton *button;
 };

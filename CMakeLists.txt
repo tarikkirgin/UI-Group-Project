@@ -10,11 +10,13 @@ qt_standard_project_setup()
 
 qt_add_executable(watertool
     main.cpp
+    window.cpp
     dataset.cpp
-    model.cpp
     dashboard.cpp
     dashboard_item.cpp
     sample.cpp
+    page.cpp
+    pollutant_overview_page.cpp
 )
 
 target_link_libraries(watertool PRIVATE Qt6::Widgets)

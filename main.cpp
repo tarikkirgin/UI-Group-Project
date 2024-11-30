@@ -1,10 +1,10 @@
-#include "dashboard.hpp"
+#include "window.hpp"
 #include <QtWidgets>
 
 int main(int argc, char *argv[]) {
   QApplication app(argc, argv);
 
-  Dashboard window;
+  Window window;
   window.show();
 
   return app.exec();
