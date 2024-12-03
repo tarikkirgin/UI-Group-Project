@@ -2,6 +2,7 @@
 #include "dashboard.hpp"
 #include "dataset.hpp"
 #include "location_dataset.hpp"
+#include "persistent_organic_pollutants_page.hpp"
 #include "pollutant_overview_page.hpp"
 #include <QtWidgets>
 
@@ -25,9 +26,11 @@ void Window::createMainWidget() {
 
   dashboard = new Dashboard();
   pollutant_overview_page = new PollutantOverviewPage();
+  persistent_organic_pollutants_page = new PersistentOrganicPollutantsPage();
 
   stackedWidget->addWidget(dashboard);
   stackedWidget->addWidget(pollutant_overview_page);
+  stackedWidget->addWidget(persistent_organic_pollutants_page);
 
   stackedWidget->setCurrentWidget(dashboard);
 
