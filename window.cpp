@@ -1,12 +1,15 @@
 #include "window.hpp"
 #include "dashboard.hpp"
 #include "dataset.hpp"
+#include "location_dataset.hpp"
 #include "pollutant_overview_page.hpp"
 #include <QtWidgets>
 
 static const int MIN_WIDTH = 300;
 Window::Window() : QMainWindow() {
   createMainWidget();
+  toolBar = new QToolBar();
+  addToolBar(toolBar);
   createToolBar();
   createStatusBar();
   addFileMenu();
@@ -29,8 +32,8 @@ void Window::createMainWidget() {
   stackedWidget->setCurrentWidget(dashboard);
 
   connect(dashboard, &Dashboard::navigateToPage, this, &Window::switchPage);
-  connect(pollutant_overview_page, &PollutantOverviewPage::navigateBack, this,
-          &Window::switchToDashboard);
+  connect(&Dataset::instance(), &Dataset::dataUpdated, this,
+          &Window::updateToolBarLocations);
 }
 
 void Window::switchPage(int pageIndex) {
@@ -40,8 +43,34 @@ void Window::switchPage(int pageIndex) {
 void Window::switchToDashboard() { switchPage(0); }
 
 void Window::createToolBar() {
-  QToolBar *toolBar = new QToolBar();
-  addToolBar(toolBar);
+  homeButton = new QToolButton();
+  homeButton->setToolTip("Home");
+  homeButton->setText("Home");
+  homeButton->setAutoRaise(true);
+  toolBar->addWidget(homeButton);
+
+  connect(homeButton, &QToolButton::clicked, this, &Window::switchToDashboard);
+
+  locationComboBox = new QComboBox();
+  locationComboBox->setEditable(true);
+  locationComboBox->setMinimumWidth(200);
+  toolBar->addWidget(locationComboBox);
+
+  connect(locationComboBox, &QComboBox::currentTextChanged,
+          &LocationDataset::instance(), &LocationDataset::onLocationChanged);
+}
+
+void Window::updateToolBarLocations() {
+  std::vector<std::string> locations = Dataset::instance().getLocations();
+  QStringList locationList;
+  for (const auto &location : locations) {
+    locationList << QString::fromStdString(location);
+  }
+  locationComboBox->addItems(locationList);
+
+  QCompleter *completer = new QCompleter(locationList, locationComboBox);
+  completer->setCaseSensitivity(Qt::CaseInsensitive);
+  locationComboBox->setCompleter(completer);
 }
 
 void Window::createStatusBar() {

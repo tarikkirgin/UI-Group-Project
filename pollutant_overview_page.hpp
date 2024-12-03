@@ -1,8 +1,9 @@
 #pragma once
+#include <QWidget>
+#include <QtCharts/QChartView>
+#include <QtCharts/QLineSeries>
 
-#include "page.hpp"
-
-class PollutantOverviewPage : public Page {
+class PollutantOverviewPage : public QWidget {
   Q_OBJECT
 
 public:
@@ -10,4 +11,9 @@ public:
 
 private:
   void setupUI();
+
+  void updateChart();
+
+  QChartView *chartView;
+  QLineSeries *series;
 };

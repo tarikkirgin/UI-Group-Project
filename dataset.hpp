@@ -12,23 +12,13 @@ public:
     static Dataset instance;
     return instance;
   }
+  Dataset() {}
 
   void loadData(const std::string &filename);
 
-  int size() const { return data.size(); }
-  Sample operator[](int index) const { return data.at(index); }
-  void clearData();
-  bool isEmpty() const { return data.empty(); }
+  std::vector<Sample> data;
+  std::vector<std::string> getLocations();
 
 signals:
-  void dataUpdated();
-
-private:
-  std::vector<Sample> data;
-
-  Dataset() {}
-  Dataset(const Dataset &) = delete;
-  Dataset &operator=(const Dataset &) = delete;
-
-  void checkDataExists() const;
+  void dataUpdated() const;
 };

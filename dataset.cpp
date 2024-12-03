@@ -44,8 +44,17 @@ void Dataset::loadData(const string &filename) {
   emit dataUpdated();
 }
 
-void Dataset::checkDataExists() const {
-  if (size() == 0) {
-    throw std::runtime_error("Dataset is empty!");
+std::vector<std::string> Dataset::getLocations() {
+  std::vector<std::string> locations;
+
+  std::unordered_set<std::string> uniqueLocations;
+
+  for (const auto &sample : data) {
+    const SamplingPoint &samplingPoint = sample.getSamplingPoint();
+    uniqueLocations.insert(samplingPoint.getLabel());
   }
+
+  locations.assign(uniqueLocations.begin(), uniqueLocations.end());
+
+  return locations;
 }

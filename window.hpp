@@ -2,8 +2,13 @@
 
 #include "dashboard.hpp"
 #include "pollutant_overview_page.hpp"
+#include <QComboBox>
+#include <QLabel>
 #include <QMainWindow>
 #include <QStackedWidget>
+#include <QString>
+#include <QToolBar>
+#include <QToolButton>
 
 class Window : public QMainWindow {
   Q_OBJECT
@@ -19,6 +24,9 @@ private:
   void addHelpMenu();
 
   QLabel *fileInfo;
+  QToolBar *toolBar;
+  QToolButton *homeButton;
+  QComboBox *locationComboBox;
 
   QStackedWidget *stackedWidget;
   Dashboard *dashboard;
@@ -26,6 +34,7 @@ private:
 
 private slots:
   void switchPage(int pageIndex);
+  void updateToolBarLocations();
   void switchToDashboard();
   void setDataLocation();
   void about();
