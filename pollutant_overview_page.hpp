@@ -1,4 +1,5 @@
 #pragma once
+#include "pollutant_card.hpp"
 #include <QWidget>
 #include <QtCharts/QChartView>
 #include <QtCharts/QLineSeries>
@@ -16,4 +17,5 @@ private:
 
   QChartView *chartView;
   QLineSeries *series;
+  PollutantCard *pcard;
 };
