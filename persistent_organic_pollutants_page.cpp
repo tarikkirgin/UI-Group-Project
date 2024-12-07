@@ -1,7 +1,7 @@
 #include "persistent_organic_pollutants_page.hpp"
 #include "location_dataset.hpp"
 #include <QDebug>
-#include <QTWidgets>
+#include <QtWidgets>
 #include <QtCharts>
 
 PersistentOrganicPollutantsPage::PersistentOrganicPollutantsPage() : QWidget() {
