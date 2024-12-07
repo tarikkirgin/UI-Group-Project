@@ -7,6 +7,8 @@
 #include <QtWidgets>
 
 static const int MIN_WIDTH = 300;
+
+//defining the constructor)
 Window::Window() : QMainWindow() {
   createMainWidget();
   toolBar = new QToolBar();
@@ -19,7 +21,7 @@ Window::Window() : QMainWindow() {
   setMinimumWidth(MIN_WIDTH);
   setWindowTitle("Water Quality Monitor");
 }
-
+// defining functions in the classes
 void Window::createMainWidget() {
   stackedWidget = new QStackedWidget();
   setCentralWidget(stackedWidget);
@@ -43,7 +45,7 @@ void Window::switchPage(int pageIndex) {
   stackedWidget->setCurrentIndex(pageIndex);
 }
 
-void Window::switchToDashboard() { switchPage(0); }
+void Window::switchToDashboard() { switchPage(0); } 
 
 void Window::createToolBar() {
   homeButton = new QToolButton();
@@ -63,7 +65,7 @@ void Window::createToolBar() {
           &LocationDataset::instance(), &LocationDataset::onLocationChanged);
 }
 
-void Window::updateToolBarLocations() {
+void Window::updateToolBarLocations() { 
   std::vector<std::string> locations = Dataset::instance().getLocations();
   QStringList locationList;
   for (const auto &location : locations) {
@@ -80,7 +82,7 @@ void Window::createStatusBar() {
   fileInfo = new QLabel("Current file: <none>");
   QStatusBar *status = statusBar();
   status->addWidget(fileInfo);
-}
+} 
 
 void Window::addFileMenu() {
   QAction *locAction = new QAction("Open CSV File", this);
@@ -108,7 +110,7 @@ void Window::addHelpMenu() {
   helpMenu->addAction(aboutQtAction);
 }
 
-void Window::setDataLocation() {
+void Window::setDataLocation() { // are we gonna use this functionality?
   QString filename = QFileDialog::getOpenFileName(
       this, "Open CSV File", ".", "CSV Files (*.csv);;All Files (*)");
 

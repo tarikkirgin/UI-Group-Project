@@ -3,8 +3,8 @@
 
 void LocationDataset::filterDataByLocation(const std::string &location) {
 
-  for (int i = 0; i < Dataset::instance().data.size(); ++i) {
-    Sample sample = Dataset::instance().data[i];
+  for (int i = 0; i < Dataset::instance().data.size(); ++i) { // retrieving the data by making object from the dataset by instance()
+    Sample sample = Dataset::instance().data[i]; // data is array of sample
     if (sample.getSamplingPoint().getLabel() == location) {
       data.push_back(sample);
     }
@@ -17,6 +17,6 @@ void LocationDataset::onLocationChanged(const QString &newLocation) {
   if (location != newLocationStd) {
     location = newLocationStd;
     filterDataByLocation(location);
-    emit dataUpdated();
+    emit dataUpdated(); // not necessary
   }
 }

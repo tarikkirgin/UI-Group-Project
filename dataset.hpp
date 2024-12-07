@@ -16,7 +16,7 @@ public:
 
   void loadData(const std::string &filename);
 
-  std::vector<Sample> data;
+  std::vector<Sample> data; //data is array of sample
   std::vector<std::string> getLocations();
 
 signals:

@@ -13,8 +13,9 @@ void Dashboard::createMainWidget() {
 
   for (int i = 0; i < itemLabels.size(); ++i) {
     DashboardItem *item = new DashboardItem(itemLabels[i], i + 1);
+     
     connect(item, &DashboardItem::navigateToPage, this,
-            &Dashboard::navigateToPage);
+            &Dashboard::navigateToPage);      
     layout->addWidget(item);
   }
   setLayout(layout);

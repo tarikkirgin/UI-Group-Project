@@ -1,5 +1,5 @@
 #pragma once
-#include <QWidget>
+#include <QtWidgets>
 #include <QtCharts/QChartView>
 #include <QtCharts/QLineSeries>
 

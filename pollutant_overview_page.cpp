@@ -1,7 +1,7 @@
 #include "pollutant_overview_page.hpp"
 #include "location_dataset.hpp"
 #include <QDebug>
-#include <QTWidgets>
+#include <QtWidgets>
 #include <QtCharts>
 
 PollutantOverviewPage::PollutantOverviewPage() : QWidget() {
