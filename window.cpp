@@ -68,10 +68,13 @@ void Window::createToolBar() {
 
 void Window::updateToolBarLocations() {
   std::vector<std::string> locations = Dataset::instance().getLocations();
+  std::sort(locations.begin(), locations.end());
+  
   QStringList locationList;
   for (const auto &location : locations) {
     locationList << QString::fromStdString(location);
   }
+  locationComboBox->clear();
   locationComboBox->addItems(locationList);
 
   QCompleter *completer = new QCompleter(locationList, locationComboBox);

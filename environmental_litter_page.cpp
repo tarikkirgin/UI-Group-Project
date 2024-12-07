@@ -106,8 +106,7 @@ void EnvironmentalLitterPage::updateChart() {
     QChart *chart = chartView->chart();
 
     // Clear existing series and axes
-     // Clear existing series and axes
-    while (!chart->series().isEmpty()){
+    while (!chart->series().isEmpty()) {
         chart->removeSeries(chart->series().first());
     }
 
@@ -119,7 +118,7 @@ void EnvironmentalLitterPage::updateChart() {
 
     // Checkbox-to-determinand map
     QMap<QString, QCheckBox *> checkboxMap = {
-        {"Bathing Water Profile : Other Litter (incl. plastics)", litter_type_1},
+        {"BWP - O.L.", litter_type_1},
         {"TarryResidus", litter_type_2},
         {"SewageDebris", litter_type_3},
     };
@@ -142,49 +141,40 @@ void EnvironmentalLitterPage::updateChart() {
     for (const Sample &sample : locationDataset) {
         QString determinandLabel = QString::fromStdString(sample.getDeterminand().getLabel());
         if (activeCategories.contains(determinandLabel)) {
-            double value = sample.getResult().getValue();
-            if (!std::isnan(value) && !std::isinf(value)) {
-                litterTotals[determinandLabel] += value;
-            }
+            litterTotals[determinandLabel] += sample.getResult().getValue();
         }
     }
 
-    // Debug: Print totals to verify summation
-    for (const QString &category : litterTotals.keys()) {
-        qDebug() << "Category:" << category << "Total:" << litterTotals[category];
-    }
+    // Debugging
+    qDebug() << "Litter Totals:" << litterTotals;
 
-    // Create bar series
+    // Create bar series and ensure separate bars (not stacked)
     QBarSeries *barSeries = new QBarSeries();
-    for (const QString &category : activeCategories) {
-        QBarSet *set = new QBarSet(category);
-        double total = litterTotals.value(category, 0.0);
-        set->append(total); // Append the total value for the category
+
+    for (int i = 0; i < activeCategories.size(); ++i) {
+        QBarSet *set = new QBarSet(activeCategories[i]);
+        set->append(litterTotals[activeCategories[i]]);
         barSeries->append(set);
     }
 
-    // Add the series to the chart
-    chart->addSeries(barSeries);
-
-    // Setup X-Axis
+    // Set up the X-Axis
     QBarCategoryAxis *axisX = new QBarCategoryAxis();
     axisX->append(activeCategories);
     chart->addAxis(axisX, Qt::AlignBottom);
     barSeries->attachAxis(axisX);
 
-    // Setup Y-Axis
+    // Attach Y-Axis
     QValueAxis *axisY = new QValueAxis();
-    axisY->setTitleText("Total Litter");
-    double max_value = 0.0;
-    for (double value : litterTotals) {
-        if (!std::isnan(value) && !std::isinf(value)) {
-            max_value = std::max(max_value, value);
-        }
+    double maxValue = 0.0;
+    for (double value : litterTotals.values()) {
+        maxValue = std::max(maxValue, value);
     }
-    max_value = std::max(max_value, 10.0); // Ensure a minimum range
-    axisY->setRange(0, max_value);
+    axisY->setRange(0, maxValue * 1.2); // Scale Y-axis slightly higher
     chart->addAxis(axisY, Qt::AlignLeft);
     barSeries->attachAxis(axisY);
+
+    // Add series to chart
+    chart->addSeries(barSeries);
 
     // Update chart title
     if (activeCategories.isEmpty()) {
