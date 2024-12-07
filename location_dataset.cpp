@@ -2,7 +2,7 @@
 #include <QDebug>
 
 void LocationDataset::filterDataByLocation(const std::string &location) {
-
+  data.clear();
   for (int i = 0; i < Dataset::instance().data.size(); ++i) {
     Sample sample = Dataset::instance().data[i];
     if (sample.getSamplingPoint().getLabel() == location) {

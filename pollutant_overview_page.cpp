@@ -1,8 +1,8 @@
 #include "pollutant_overview_page.hpp"
 #include "location_dataset.hpp"
 #include <QDebug>
-#include <QTWidgets>
 #include <QtCharts>
+#include <QtWidgets>
 
 PollutantOverviewPage::PollutantOverviewPage() : QWidget() {
   setupUI();
@@ -23,7 +23,10 @@ void PollutantOverviewPage::setupUI() {
   chartView = new QChartView(chart);
   chartView->setRenderHint(QPainter::Antialiasing);
 
+  pcard = new PollutantCard();
+
   mainLayout->addWidget(chartView);
+  mainLayout->addWidget(pcard);
 
   setLayout(mainLayout);
 
@@ -36,12 +39,17 @@ void PollutantOverviewPage::updateChart() {
 
   const auto &locationDataset = LocationDataset::instance().data;
 
+  QSet<QString> allowedDeterminands = {"Chloroform", "112TCEthan", "Atrazine"};
   QMap<QString, QLineSeries *> seriesMap;
 
   for (int i = 0; i < locationDataset.size(); ++i) {
     const Sample &sample = locationDataset[i];
     QString determinandLabel =
         QString::fromStdString(sample.getDeterminand().getLabel());
+
+    if (!allowedDeterminands.contains(determinandLabel)) {
+      continue;
+    }
 
     if (!seriesMap.contains(determinandLabel)) {
       QLineSeries *newSeries = new QLineSeries();
