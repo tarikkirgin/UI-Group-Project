@@ -1,5 +1,4 @@
 #pragma once
-
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QWidget>

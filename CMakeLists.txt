@@ -18,6 +18,7 @@ qt_add_executable(watertool
     sample.cpp
     pollutant_overview_page.cpp
     persistent_organic_pollutants_page.cpp
+    environmental_litter_page.cpp
 )
 
 target_link_libraries(watertool PRIVATE Qt6::Widgets Qt6::Charts)

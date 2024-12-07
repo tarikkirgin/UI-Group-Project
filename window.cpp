@@ -27,10 +27,12 @@ void Window::createMainWidget() {
   dashboard = new Dashboard();
   pollutant_overview_page = new PollutantOverviewPage();
   persistent_organic_pollutants_page = new PersistentOrganicPollutantsPage();
+  environmental_litter_page = new EnvironmentalLitterPage();
 
   stackedWidget->addWidget(dashboard);
   stackedWidget->addWidget(pollutant_overview_page);
   stackedWidget->addWidget(persistent_organic_pollutants_page);
+  stackedWidget->addWidget(environmental_litter_page);
 
   stackedWidget->setCurrentWidget(dashboard);
 
@@ -51,6 +53,7 @@ void Window::createToolBar() {
   homeButton->setText("Home");
   homeButton->setAutoRaise(true);
   toolBar->addWidget(homeButton);
+  toolBar->setContentsMargins(0,0,0,0);
 
   connect(homeButton, &QToolButton::clicked, this, &Window::switchToDashboard);
 
