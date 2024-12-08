@@ -1,8 +1,11 @@
 #include "pollutant_card.hpp"
 #include "location_dataset.hpp"
-#include <QtWidgets>
+#include <QVBoxLayout>
 
-PollutantCard::PollutantCard() : QGroupBox("test") {
+PollutantCard::PollutantCard(const std::string &determinandLabel,
+                             double complianceLevel)
+    : QGroupBox(QString::fromStdString(determinandLabel)),
+      determinandLabel(determinandLabel), complianceLevel(complianceLevel) {
   setupUI();
 
   connect(&LocationDataset::instance(), &LocationDataset::dataUpdated, this,
@@ -10,10 +13,52 @@ PollutantCard::PollutantCard() : QGroupBox("test") {
 }
 
 void PollutantCard::setupUI() {
-  QVBoxLayout *layout = new QVBoxLayout(this);
-  testLabel = new QLabel("Initial Text");
-  layout->addWidget(testLabel);
+  auto *layout = new QVBoxLayout();
+
+  valueLabel = new QLabel();
+  complianceLabel = new QLabel();
+
+  layout->addWidget(valueLabel);
+  layout->addWidget(complianceLabel);
+
   setLayout(layout);
 }
 
-void PollutantCard::updateUI() { testLabel->setText("hey"); }
+void PollutantCard::updateUI() {
+  const auto &locationDataset = LocationDataset::instance().data;
+
+  std::string unit;
+  double total = 0.0;
+  int count = 0;
+
+  for (const auto &sample : locationDataset) {
+    if (sample.getDeterminand().getLabel() == determinandLabel) {
+      unit = sample.getDeterminand().getUnit();
+      total += sample.getResult().getValue();
+      count++;
+    }
+  }
+
+  if (count > 0) {
+    double average = total / count;
+    valueLabel->setText(QString("Average Value: %1 %2")
+                            .arg(average)
+                            .arg(QString::fromStdString(unit)));
+
+    complianceLabel->setText(QString("Compliance Level: Under %1 %2")
+                                 .arg(complianceLevel)
+                                 .arg(QString::fromStdString(unit)));
+
+    if (average > complianceLevel) {
+      setStyleSheet("QGroupBox { background: red; }");
+    } else if (average < complianceLevel) {
+      setStyleSheet("QGroupBox { background: green; }");
+    } else {
+      setStyleSheet("QGroupBox { background: amber; }");
+    }
+  } else {
+    valueLabel->setText("Average Value: N/A");
+
+    setStyleSheet("");
+  }
+}

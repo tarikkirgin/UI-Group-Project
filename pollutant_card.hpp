@@ -1,16 +1,22 @@
 #pragma once
+#include <QComboBox>
 #include <QGroupBox>
 #include <QLabel>
+#include <QVBoxLayout>
 
 class PollutantCard : public QGroupBox {
   Q_OBJECT
 
 public:
-  PollutantCard();
+  PollutantCard(const std::string &determinandLabel, double complianceLevel);
 
-  QLabel *testLabel;
+private slots:
+  void updateUI();
 
 private:
   void setupUI();
-  void updateUI();
+  std::string determinandLabel;
+  double complianceLevel;
+  QLabel *valueLabel;
+  QLabel *complianceLabel;
 };
