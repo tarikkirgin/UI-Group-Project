@@ -2,6 +2,7 @@
 #include <QComboBox>
 #include <QGroupBox>
 #include <QLabel>
+#include <QString>
 #include <QVBoxLayout>
 
 class PollutantCard : public QGroupBox {
@@ -9,6 +10,7 @@ class PollutantCard : public QGroupBox {
 
 public:
   PollutantCard(const std::string &determinandLabel, double complianceLevel);
+  std::string getDeterminandLabel() const { return determinandLabel; }
 
 private slots:
   void updateUI();
