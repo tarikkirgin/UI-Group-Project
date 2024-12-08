@@ -1,5 +1,7 @@
 #include "pollutant_overview_page.hpp"
+#include "flowlayout.h"
 #include "location_dataset.hpp"
+#include "pollutant_card.hpp"
 #include <QDebug>
 #include <QtCharts>
 #include <QtWidgets>
@@ -12,7 +14,18 @@ PollutantOverviewPage::PollutantOverviewPage() : QWidget() {
 }
 
 void PollutantOverviewPage::setupUI() {
-  QVBoxLayout *mainLayout = new QVBoxLayout(this);
+  QVBoxLayout *mainLayout = new QVBoxLayout();
+
+  QScrollArea *scrollArea = new QScrollArea();
+  scrollArea->setWidgetResizable(true);
+  QWidget *centralWidget = new QWidget();
+  QVBoxLayout *contentLayout = new QVBoxLayout();
+
+  searchBar = new QLineEdit();
+  searchBar->setPlaceholderText("Type to filter pollutants...");
+  connect(searchBar, &QLineEdit::textChanged, this,
+          &PollutantOverviewPage::filterCards);
+  contentLayout->addWidget(searchBar);
 
   series = new QLineSeries();
   QChart *chart = new QChart();
@@ -23,12 +36,44 @@ void PollutantOverviewPage::setupUI() {
   chartView = new QChartView(chart);
   chartView->setRenderHint(QPainter::Antialiasing);
 
-  pcard = new PollutantCard();
+  QWidget *cardContainer = new QWidget();
+  FlowLayout *flowLayout = new FlowLayout(cardContainer, -1, 20, 20);
 
-  mainLayout->addWidget(chartView);
-  mainLayout->addWidget(pcard);
+  for (auto pollutant = determinandsMap.begin();
+       pollutant != determinandsMap.end(); pollutant++) {
+    PollutantCard *pollutant_card =
+        new PollutantCard(pollutant.key().toStdString(), pollutant.value());
+    pollutant_card->setMaximumWidth(350);
+    flowLayout->addWidget(pollutant_card);
+    pollutantCards.push_back(pollutant_card);
+  }
+
+  contentLayout->addWidget(chartView);
+  contentLayout->addWidget(cardContainer);
+
+  centralWidget->setLayout(contentLayout);
+
+  scrollArea->setWidget(centralWidget);
+
+  mainLayout->addWidget(scrollArea);
 
   setLayout(mainLayout);
+
+  updateChart();
+}
+
+void PollutantOverviewPage::filterCards() {
+  QString searchText = searchBar->text().toLower();
+
+  for (PollutantCard *card : pollutantCards) {
+    if (QString::fromStdString(card->getDeterminandLabel())
+            .toLower()
+            .contains(searchText)) {
+      card->show();
+    } else {
+      card->hide();
+    }
+  }
 
   updateChart();
 }
@@ -39,15 +84,17 @@ void PollutantOverviewPage::updateChart() {
 
   const auto &locationDataset = LocationDataset::instance().data;
 
-  QSet<QString> allowedDeterminands = {"Chloroform", "112TCEthan", "Atrazine"};
   QMap<QString, QLineSeries *> seriesMap;
+
+  QString searchText = searchBar->text().toLower();
 
   for (int i = 0; i < locationDataset.size(); ++i) {
     const Sample &sample = locationDataset[i];
     QString determinandLabel =
         QString::fromStdString(sample.getDeterminand().getLabel());
 
-    if (!allowedDeterminands.contains(determinandLabel)) {
+    if (!determinandsMap.contains(determinandLabel) ||
+        !determinandLabel.toLower().contains(searchText)) {
       continue;
     }
 
