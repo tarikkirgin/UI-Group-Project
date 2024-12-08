@@ -1,5 +1,7 @@
 #include "pollutant_overview_page.hpp"
+#include "flowlayout.h"
 #include "location_dataset.hpp"
+#include "pollutant_card.hpp"
 #include <QDebug>
 #include <QtCharts>
 #include <QtWidgets>
@@ -12,7 +14,7 @@ PollutantOverviewPage::PollutantOverviewPage() : QWidget() {
 }
 
 void PollutantOverviewPage::setupUI() {
-  QVBoxLayout *mainLayout = new QVBoxLayout(this);
+  QVBoxLayout *mainLayout = new QVBoxLayout();
 
   series = new QLineSeries();
   QChart *chart = new QChart();
@@ -23,10 +25,24 @@ void PollutantOverviewPage::setupUI() {
   chartView = new QChartView(chart);
   chartView->setRenderHint(QPainter::Antialiasing);
 
-  pcard = new PollutantCard();
+  QWidget *cardContainer = new QWidget();
+  FlowLayout *flowLayout = new FlowLayout(cardContainer, -1, 20, 20);
+
+  // Define the map with determinand names and compliance levels
+  QMap<QString, double> determinands = {
+      {"Chloroform", 0.75}, {"112TCEthan", 0.60}, {"Atrazine", 0.85}};
+
+  // Loop through the map instead of the set
+  for (auto it = determinands.begin(); it != determinands.end(); ++it) {
+    // Pass both the determinand name and compliance level to the card
+    PollutantCard *pollutant_card =
+        new PollutantCard(it.key().toStdString(), it.value());
+    pollutant_card->setMaximumWidth(350);
+    flowLayout->addWidget(pollutant_card);
+  }
 
   mainLayout->addWidget(chartView);
-  mainLayout->addWidget(pcard);
+  mainLayout->addWidget(cardContainer);
 
   setLayout(mainLayout);
 
@@ -39,7 +55,6 @@ void PollutantOverviewPage::updateChart() {
 
   const auto &locationDataset = LocationDataset::instance().data;
 
-  QSet<QString> allowedDeterminands = {"Chloroform", "112TCEthan", "Atrazine"};
   QMap<QString, QLineSeries *> seriesMap;
 
   for (int i = 0; i < locationDataset.size(); ++i) {
@@ -47,7 +62,7 @@ void PollutantOverviewPage::updateChart() {
     QString determinandLabel =
         QString::fromStdString(sample.getDeterminand().getLabel());
 
-    if (!allowedDeterminands.contains(determinandLabel)) {
+    if (!determinands.contains(determinandLabel)) {
       continue;
     }
 
