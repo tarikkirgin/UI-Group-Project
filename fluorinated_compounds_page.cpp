@@ -107,6 +107,8 @@ void FluorinatedCompoundsPage::setupChart() {
     connect(series, &QLineSeries::clicked, this, &FluorinatedCompoundsPage::showPopupInfo);
     
     chartView->setChart(chart);
+
+    updateChart();
 }
 
 QString FluorinatedCompoundsPage::getComplianceColor(double value) {
@@ -157,8 +159,8 @@ void FluorinatedCompoundsPage::switchToTimeSeries() {
     }
     if (chartView) {
         chartView->show();
+        updateChart();
     }
-    setupChart();
     isMapView = false;
 }
 
