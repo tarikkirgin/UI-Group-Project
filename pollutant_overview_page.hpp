@@ -3,9 +3,13 @@
 #include "pollutant_card.hpp"
 #include <QLineEdit>
 #include <QStringList>
+#include <QVBoxLayout>
 #include <QWidget>
+#include <QtCharts/QChart>
 #include <QtCharts/QChartView>
+#include <QtCharts/QDateTimeAxis>
 #include <QtCharts/QLineSeries>
+#include <QtCharts/QValueAxis>
 
 class PollutantOverviewPage : public QWidget {
   Q_OBJECT
@@ -18,8 +22,17 @@ private:
   void updateChart();
   void filterCards();
 
+  QVBoxLayout *mainLayout;
+  QVBoxLayout *contentLayout;
+  QWidget *centralWidget;
+  QScrollArea *scrollArea;
+  QScrollArea *chartScrollArea;
+  QWidget *cardContainer;
+  FlowLayout *flowLayout;
+  QChart *chart;
   QChartView *chartView;
-  QLineSeries *series;
+  QDateTimeAxis *axisX;
+  QValueAxis *axisY;
 
   QLineEdit *searchBar;
   QMap<QString, double> determinandsMap = {
