@@ -1,203 +1,195 @@
 #include "fluorinated_compounds_page.hpp"
-#include <random> 
-#include <QChart>
-#include <QToolTip>
-#include <QDateTime>
+#include <QGridLayout>
 
-// Constructor
-FluorinatedCompoundsPage::FluorinatedCompoundsPage(QWidget* parent)
-    : QWidget(parent)
-    , isMapView(false)
-{
-    // Add some test data
-    testData = {
-        {"Location A", 0.05, "2024-01-01"},
-        {"Location B", 0.12, "2024-01-01"},
-        {"Location C", 0.08, "2024-01-01"},
-        {"Location D", 0.15, "2024-01-01"}
+FluorinatedInfoDialog::FluorinatedInfoDialog(QWidget* parent) : QDialog(parent) {
+    setWindowTitle(tr("About Fluoride Compounds"));
+    setMinimumSize(400, 300);
+
+    auto layout = new QVBoxLayout(this);
+
+    auto addInfoSection = [&](const QString& title, const QString& content) {
+        auto label = new QLabel(QString("<b>%1</b>").arg(title));
+        layout->addWidget(label);
+        label = new QLabel(content);
+        label->setWordWrap(true);
+        layout->addWidget(label);
+        layout->addSpacing(10);
     };
+
+    addInfoSection("What are Fluorinated Compounds?",
+"Fluorinated compounds include a series of fluorinated chemical substances, such as PFAS (per- and polyfluoroalkyl substances). \n"
+"These compounds are widely used in industry due to their unique chemical properties, but they also bring about environmental problems.");
     
+    addInfoSection("Environmental Persistence",
+"• Extremely slow degradation in the environment\n"
+"• Have bioaccumulative properties\n"
+"• Can migrate long distances in environmental media");
+
+    addInfoSection("Potential Impacts",
+"• May affect the endocrine systems of organisms\n"
+"• May impact immune functions\n"
+"• Pose threats to aquatic ecosystems\n"
+"• Bioaccumulate through the food chain");
+
+    addInfoSection("Monitoring Standards",
+    QString("The current safety threshold is %1 μg/L. Measures must be taken if this threshold is exceeded.")
+    .arg(FluorinatedCompoundsPage::SAFETY_THRESHOLD));
+        
+
+    auto closeButton = new QPushButton(tr("close"), this);
+    layout->addWidget(closeButton);
+    connect(closeButton, &QPushButton::clicked, this, &QDialog::accept);
+}
+
+FluorinatedCompoundsPage::FluorinatedCompoundsPage(QWidget* parent) : QWidget(parent) {
     setupUI();
-    setupChart();
-}
-
-// View A: Set the map view
-void FluorinatedCompoundsPage::setupMap() {
-    // Hide the chart view
-    if (chartView) {
-        chartView->hide();
-    }
-
-    // Create a map container
-    mapWidget = new QWidget(this);
-    QGridLayout* mapLayout = new QGridLayout(mapWidget);
-    
-    // Create a map background
-    mapLabel = new QLabel(mapWidget);
-    mapLabel->setStyleSheet("background-color: #f0f0f0;"); // Temporary background color
-    mapLabel->setMinimumSize(400, 300);
-    
-    mapLayout->addWidget(mapLabel);
-    mainLayout->addWidget(mapWidget, 1, 0, 1, 2);
-    
-    // Add a location marker
-    for (const auto& data : testData) {
-        QPushButton* marker = new QPushButton(mapWidget);
-        marker->setFixedSize(20, 20);
-        std::random_device rd;
-        std::mt19937 gen(rd());
-        std::uniform_int_distribution<> disX(0, 380);
-        std::uniform_int_distribution<> disY(0, 280);
-        marker->move(disX(gen), disY(gen));
-        
-        // Set the color
-        QString color = getComplianceColor(data.value);
-        marker->setStyleSheet(QString("background-color: %1; border-radius: 10px;").arg(color));
-        
-        // Add a tooltip
-        QString tooltipText = QString(
-            "Location: %1\n"
-            "PFAS Level: %2 µg/L\n"
-            "Status: %3\n"
-            "Last Updated: %4"
-        ).arg(data.location)
-         .arg(data.value)
-         .arg(data.value > PFAS_THRESHOLD ? "Exceeds threshold" : "Within safe levels")
-         .arg(data.timestamp);
-        
-        marker->setToolTip(tooltipText);
-        
-        locationMarkers[data.location] = marker;
-    }
-}
-
-// View B: Set up a time series chart
-void FluorinatedCompoundsPage::setupChart() {
-    QChart* chart = new QChart();
-    series = new QLineSeries();
-    
-    chart->addSeries(series);
-    chart->setTitle("PFAS Levels Over Time");
-    
-    // Set the axes
-    QValueAxis* axisX = new QValueAxis();
-    QValueAxis* axisY = new QValueAxis();
-    
-    axisX->setTitleText("Time");
-    axisY->setTitleText("PFAS Level (µg/L)");
-    
-    // Set the Y-axis range to include the safety threshold
-    axisY->setRange(0, PFAS_THRESHOLD * 2);
-    
-    chart->addAxis(axisX, Qt::AlignBottom);
-    chart->addAxis(axisY, Qt::AlignLeft);
-    
-    series->attachAxis(axisX);
-    series->attachAxis(axisY);
-    
-    // Add a threshold guide
-    QLineSeries* thresholdLine = new QLineSeries();
-    thresholdLine->append(0, PFAS_THRESHOLD);
-    thresholdLine->append(10, PFAS_THRESHOLD);
-    thresholdLine->setPen(QPen(Qt::red, 1, Qt::DashLine));
-    chart->addSeries(thresholdLine);
-    thresholdLine->attachAxis(axisX);
-    thresholdLine->attachAxis(axisY);
-
-    connect(series, &QLineSeries::clicked, this, &FluorinatedCompoundsPage::showPopupInfo);
-    
-    chartView->setChart(chart);
-
-    updateChart();
-}
-
-QString FluorinatedCompoundsPage::getComplianceColor(double value) {
-    if (value <= PFAS_THRESHOLD * 0.5) return "#00FF00"; // green
-    if (value <= PFAS_THRESHOLD) return "#FFFF00"; // yellow
-    return "#FF0000"; // red
-}
-
-void FluorinatedCompoundsPage::showPopupInfo(const QPointF& point) {
-    QString info = QString(
-        "PFAS Level: %1 µg/L\n"
-        "Threshold: %2 µg/L\n"
-        "Status: %3\n\n"
-        "Environmental Impact:\n"
-        "- Long-term persistence in environment\n"
-        "- Potential groundwater contamination\n\n"
-        "Health Implications:\n"
-        "- May affect immune system\n"
-        "- Potential developmental effects"
-    ).arg(point.y(), 0, 'f', 3)
-     .arg(PFAS_THRESHOLD)
-     .arg(point.y() > PFAS_THRESHOLD ? "Exceeds threshold" : "Within safe levels");
-
-    QToolTip::showText(QCursor::pos(), info);
-}
-
-void FluorinatedCompoundsPage::updateChart() {
-    if (series) {
-        series->clear();
-        // Add test data points
-        for (int i = 0; i < testData.size(); ++i) {
-            series->append(i, testData[i].value);
-        }
-    }
-}
-
-void FluorinatedCompoundsPage::switchToMap() {
-    if (chartView) {
-        chartView->hide();
-    }
-    setupMap();
-    isMapView = true;
-}
-
-void FluorinatedCompoundsPage::switchToTimeSeries() {
-    if (mapWidget) {
-        mapWidget->hide();
-    }
-    if (chartView) {
-        chartView->show();
-        updateChart();
-    }
-    isMapView = false;
-}
-
-void FluorinatedCompoundsPage::showLocationDetails(const QString& location) {
-    // Displays location details
-    for (const auto& data : testData) {
-        if (data.location == location) {
-            QString info = QString("Location: %1\nPFAS Level: %2 µg/L\nStatus: %3")
-                .arg(location)
-                .arg(data.value)
-                .arg(data.value > PFAS_THRESHOLD ? "Exceeds threshold" : "Within safe levels");
-            QToolTip::showText(QCursor::pos(), info);
-            break;
-        }
-    }
+    processData();
+    createChart();
+    updateStatusIndicators();
 }
 
 void FluorinatedCompoundsPage::setupUI() {
-    mainLayout = new QGridLayout(this);
+    mainLayout = new QVBoxLayout(this);
     
-    // Create a view toggle button
-    mapViewButton = new QPushButton("Map View", this);
-    timeSeriesButton = new QPushButton("Time Series", this);
-    
-    connect(mapViewButton, &QPushButton::clicked, this, &FluorinatedCompoundsPage::switchToMap);
-    connect(timeSeriesButton, &QPushButton::clicked, this, &FluorinatedCompoundsPage::switchToTimeSeries);
+    // Title
+    auto titleLabel = new QLabel(tr("Monitoring of fluoride compounds"), this);
+    QFont titleFont = titleLabel->font();
+    titleFont.setPointSize(16);
+    titleFont.setBold(true);
+    titleLabel->setFont(titleFont);
+    mainLayout->addWidget(titleLabel);
 
-    // Create a chart view
+    // Status indication area
+    statusLayout = new QHBoxLayout();
+    mainLayout->addLayout(statusLayout);
+
+    // Chart area
     chartView = new QChartView(this);
     chartView->setRenderHint(QPainter::Antialiasing);
+    mainLayout->addWidget(chartView);
 
-    // Create a threshold label
-    thresholdLabel = new QLabel(QString("PFAS Threshold: %1 µg/L").arg(PFAS_THRESHOLD), this);
+    // Info button
+    infoButton = new QPushButton(tr("View Details"), this);
+    connect(infoButton, &QPushButton::clicked, this, &FluorinatedCompoundsPage::showInfoDialog);
+    mainLayout->addWidget(infoButton);
+}
 
-    // Layout arrangement
-    mainLayout->addWidget(mapViewButton, 0, 0);
-    mainLayout->addWidget(timeSeriesButton, 0, 1);
-    mainLayout->addWidget(chartView, 1, 0, 1, 2);
-    mainLayout->addWidget(thresholdLabel, 2, 0, 1, 2);
+void FluorinatedCompoundsPage::processData() {
+    const auto& dataset = Dataset::instance();
+    
+    for (const auto& sample : dataset.data) {
+        CompoundData data;
+        data.location = QString::fromStdString(sample.getSamplingPoint().getLabel());
+        data.time = QDateTime::fromString(QString::fromStdString(sample.getTime()), Qt::ISODate);
+        data.value = sample.getResult().getValue();
+        compoundData.push_back(data);
+    }
+}
+
+void FluorinatedCompoundsPage::createChart() {
+    chart = new QChart();
+    chart->setTitle(tr("Trends in fluoride concentrations"));
+    
+    // Create folded series
+    QMap<QString, QLineSeries*> seriesMap;
+    
+    for (const auto& data : compoundData) {
+        if (!seriesMap.contains(data.location)) {
+            auto series = new QLineSeries(chart);
+            series->setName(data.location);
+            seriesMap[data.location] = series;
+        }
+        
+        auto series = seriesMap[data.location];
+        series->append(data.time.toMSecsSinceEpoch(), data.value);
+    }
+
+    // Add series to the chart
+    for (auto series : seriesMap.values()) {
+        chart->addSeries(series);
+    }
+
+    // Create axes
+    auto axisX = new QDateTimeAxis;
+    axisX->setFormat("yyyy-MM-dd");
+    axisX->setTitleText(tr("dates"));
+    chart->addAxis(axisX, Qt::AlignBottom);
+
+    auto axisY = new QValueAxis;
+    axisY->setTitleText(tr("concentration (μg/L)"));
+    axisY->setMin(0);
+    chart->addAxis(axisY, Qt::AlignLeft);
+
+    // Add a safety threshold reference line
+    auto threshold = new QLineSeries(chart);
+    threshold->setName(tr("safety threshold"));
+    if (!compoundData.empty()) {
+        auto minTime = compoundData.front().time.toMSecsSinceEpoch();
+        auto maxTime = compoundData.back().time.toMSecsSinceEpoch();
+        threshold->append(minTime, SAFETY_THRESHOLD);
+        threshold->append(maxTime, SAFETY_THRESHOLD);
+    }
+    QPen pen(Qt::red);
+    pen.setStyle(Qt::DashLine);
+    threshold->setPen(pen);
+    chart->addSeries(threshold);
+
+    // Associate series to axes
+    for (auto series : seriesMap.values()) {
+        series->attachAxis(axisX);
+        series->attachAxis(axisY);
+    }
+    threshold->attachAxis(axisX);
+    threshold->attachAxis(axisY);
+
+    chartView->setChart(chart);
+}
+
+QColor FluorinatedCompoundsPage::getStatusColor(double value) const {
+    if (value > SAFETY_THRESHOLD * 1.5) return Qt::red;
+    if (value > SAFETY_THRESHOLD) return QColor(255, 165, 0); // Orange
+    return Qt::green;
+}
+
+void FluorinatedCompoundsPage::updateStatusIndicators() {
+    // Clear esxisting label
+    for (auto label : statusLabels) {
+        statusLayout->removeWidget(label);
+        delete label;
+    }
+    statusLabels.clear();
+
+    // Create a new label
+    QMap<QString, double> latestValues;
+    for (const auto& data : compoundData) {
+        latestValues[data.location] = data.value;
+    }
+
+    for (auto it = latestValues.begin(); it != latestValues.end(); ++it) {
+        auto container = new QWidget(this);
+        auto layout = new QVBoxLayout(container);
+        
+        auto locationLabel = new QLabel(it.key(), container);
+        auto valueLabel = new QLabel(QString("%1 μg/L").arg(it.value(), 0, 'f', 3), container);
+        
+        QFont valueFont = valueLabel->font();
+        valueFont.setPointSize(12);
+        valueFont.setBold(true);
+        valueLabel->setFont(valueFont);
+        
+        valueLabel->setStyleSheet(QString("color: %1")
+            .arg(getStatusColor(it.value()).name()));
+        
+        layout->addWidget(locationLabel);
+        layout->addWidget(valueLabel);
+        
+        statusLayout->addWidget(container);
+        statusLabels.push_back(locationLabel);
+        statusLabels.push_back(valueLabel);
+    }
+}
+
+void FluorinatedCompoundsPage::showInfoDialog() {
+    FluorinatedInfoDialog dialog(this);
+    dialog.exec();
 }
