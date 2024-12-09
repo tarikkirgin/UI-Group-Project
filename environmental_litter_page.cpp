@@ -6,7 +6,7 @@
 
 EnvironmentalLitterPage::EnvironmentalLitterPage() : QWidget() {
     setupUI();
-
+    // soon as the data has been read the chart gets updated
     connect(&LocationDataset::instance(), &LocationDataset::dataUpdated, this, &EnvironmentalLitterPage::updateChart);
 }
 
@@ -22,7 +22,7 @@ void EnvironmentalLitterPage::setupUI() {
     QLabel *title = new QLabel();
     title->setText("Environmental Litter Indicators");
     title->setAlignment(Qt::AlignCenter);
-    title->setStyleSheet("padding: 0px; margin: 0px; font-size: 16px; font-weight: bold; border: 1px solid red;"); // Border for debugging
+    title->setStyleSheet("padding: 0px;     margin: 0px; font-size: 16px; font-weight: bold; border: 1px solid red;"); // Border for debugging
     QFontMetrics fm(title->font());
     int textHeight = fm.height();
     title->setMinimumHeight(textHeight);
@@ -48,6 +48,7 @@ void EnvironmentalLitterPage::setupUI() {
     int labeltextHeight = font.height();
     left_label->setMinimumHeight(labeltextHeight);
     left_label->setMaximumHeight(labeltextHeight);
+    checkboxLayout->addWidget(left_label);
 
     litter_type_1 = new QCheckBox("Litter Type 1");
     litter_type_2 = new QCheckBox("Litter Type 2");
@@ -57,7 +58,7 @@ void EnvironmentalLitterPage::setupUI() {
     litter_type_2->setStyleSheet("border: 1px solid orange;"); // Border for debugging
     litter_type_3->setStyleSheet("border: 1px solid orange;"); // Border for debugging
 
-    checkboxLayout->addWidget(left_label);
+    
     checkboxLayout->addWidget(litter_type_1);
     checkboxLayout->addWidget(litter_type_2);
     checkboxLayout->addWidget(litter_type_3);

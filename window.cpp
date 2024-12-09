@@ -4,6 +4,7 @@
 #include "location_dataset.hpp"
 #include "persistent_organic_pollutants_page.hpp"
 #include "pollutant_overview_page.hpp"
+#include "compliance_page.hpp"
 #include <QtWidgets>
 
 static const int MIN_WIDTH = 300;
@@ -30,11 +31,13 @@ void Window::createMainWidget() {
   pollutant_overview_page = new PollutantOverviewPage();
   persistent_organic_pollutants_page = new PersistentOrganicPollutantsPage();
   environmental_litter_page = new EnvironmentalLitterPage();
+  compliance_page = new compliancePage();
 
   stackedWidget->addWidget(dashboard);
   stackedWidget->addWidget(pollutant_overview_page);
   stackedWidget->addWidget(persistent_organic_pollutants_page);
   stackedWidget->addWidget(environmental_litter_page);
+  stackedWidget->addWidget(compliance_page);
 
   stackedWidget->setCurrentWidget(dashboard);
 
@@ -65,9 +68,9 @@ void Window::createToolBar() {
   toolBar->addWidget(locationComboBox);
 
   connect(locationComboBox, &QComboBox::currentTextChanged,
-          &LocationDataset::instance(), &LocationDataset::onLocationChanged);
-}
-
+          &LocationDataset::instance(), &LocationDataset::onLocationChanged); // this is the most important code..
+}                                                                             // QComboBox::currentTextChanged() takes string parameter
+//having location drop downs have all of the locations list                      and it passes on to LocationDataset::onLocationChanged()
 void Window::updateToolBarLocations() { 
   std::vector<std::string> locations = Dataset::instance().getLocations();
   QStringList locationList;
@@ -113,7 +116,7 @@ void Window::addHelpMenu() {
   helpMenu->addAction(aboutQtAction);
 }
 
-void Window::setDataLocation() { // are we gonna use this functionality?
+void Window::setDataLocation() { // 
   QString filename = QFileDialog::getOpenFileName(
       this, "Open CSV File", ".", "CSV Files (*.csv);;All Files (*)");
 

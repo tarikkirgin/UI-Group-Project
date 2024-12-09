@@ -3,7 +3,7 @@
 #include <QLabel>
 #include <QCheckBox>
 #include <QtCharts/QChartView>
-#include <QtCharts/QlineSeries>
+#include <QtCharts/QLineSeries>
 #include <QtCharts/QBarSeries>
 
 class EnvironmentalLitterPage : public QWidget {

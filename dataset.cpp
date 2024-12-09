@@ -6,7 +6,9 @@
 
 using namespace std;
 
-void Dataset::loadData(const string &filename) {
+
+
+void Dataset::loadData(const string &filename) { //store arrary of sample (called data) with data.
   csv::CSVReader reader(filename);
 
   data.clear();
@@ -44,8 +46,8 @@ void Dataset::loadData(const string &filename) {
   emit dataUpdated();
 }
 
-std::vector<std::string> Dataset::getLocations() {
-  std::vector<std::string> locations;
+std::vector<std::string> Dataset::getLocations() { // getting string array of location from data
+  std::vector<std::string> locations; //get empty location string array
 
   std::unordered_set<std::string> uniqueLocations;
 
@@ -57,4 +59,28 @@ std::vector<std::string> Dataset::getLocations() {
   locations.assign(uniqueLocations.begin(), uniqueLocations.end());
 
   return locations;
+}
+
+  std::vector<std::string> Dataset::getPollutants() { // returning string arrary of pollutant from data!!
+  std::vector<std::string> pollutants;
+  
+  pollutants.clear();
+  for (const auto &sample : data) {
+    const Determinand &determinand = sample.getDeterminand();
+    pollutants.push_back(determinand.getLabel());
+  }
+
+  return pollutants;
+}
+
+  std::vector<bool> Dataset::getCompliances() { // returning string arrary of compliance from data!!
+  std::vector<bool> compliances;
+  
+  compliances.clear();
+  for (const auto &sample : data) {
+    const bool compliance = sample.getIsComplianceSample();
+
+    compliances.push_back(compliance);
+  }
+  return compliances;
 }

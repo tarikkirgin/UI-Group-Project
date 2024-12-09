@@ -10,8 +10,10 @@ public:
     static LocationDataset instance;
     return instance;
   }
-
-  std::string getLocation() const { return location; }
+  
+  // std::string getLocation() const { return location; }
+  std::vector<std::string> getPollutants();
+  std::vector<bool> getCompliances();
   std::vector<Sample> data;
 
 public slots:
