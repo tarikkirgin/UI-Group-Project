@@ -16,11 +16,12 @@ private:
   QChart *chart;
   QComboBox *pollutantComboBox;
   QComboBox *complianceComboBox;
+  QBarSet *barSet;
   void setupUI(); //Have etc and dropdowns and charts
-  void LupdateChart();// connect to how the chart reacts to these dropdowns
-  void PupdateChart();
-  void makeNewChart(const std::vector<Sample> &dataset); //drop downs for pollutant and compliance and also location on the toolbar
-  void updateToolBar();
+  void updateChart();// connect to how the chart reacts to these dropdowns
+  // void PupdateChart();
+  // void makeNewChart(const std::vector<Sample> &dataset); //drop downs for pollutant and compliance and also location on the toolbar
+  void updateDropdown();
   // void hover(); //reacting to chart when hovering
 
   QChartView *chartView;

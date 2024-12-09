@@ -20,6 +20,7 @@ void PollutantDataset::onPollutantChanged(const QString &newPollutant) {
     pollutant = newPollutantStd;
     filterDataByPollutant(pollutant);
     emit dataUpdated(); // not necessary
+    qDebug() << "B let's goooo";
   }
 }
 
@@ -44,6 +45,7 @@ void PollutantDataset::onComplianceChanged(const QString &newCompliance) {
       filterDataByCompliance(true);
     }
     emit dataUpdated(); // not necessary
+    qDebug() << "C Let's goooooo";
   
 }
 

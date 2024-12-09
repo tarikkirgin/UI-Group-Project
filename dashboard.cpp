@@ -1,5 +1,6 @@
 #include "dashboard.hpp"
 #include "dashboard_item.hpp"
+#include <QDebug>
 
 Dashboard::Dashboard() { createMainWidget(); }
 
@@ -11,8 +12,8 @@ void Dashboard::createMainWidget() {
                             "Environmental Litter Indicators",
                             "Fluorinated Compounds", "Compliance Dashboard"};
 
-  for (int i = 0; i < itemLabels.size(); ++i) {
-    DashboardItem *item = new DashboardItem(itemLabels[i], i + 1);
+  for (int i = 1; i < itemLabels.size() + 1; ++i) {
+    DashboardItem *item = new DashboardItem(itemLabels[i-1], i);
      
     connect(item, &DashboardItem::navigateToPage, this,
             &Dashboard::navigateToPage);      

@@ -119,7 +119,7 @@ void Window::addHelpMenu() {
 void Window::setDataLocation() { // 
   QString filename = QFileDialog::getOpenFileName(
       this, "Open CSV File", ".", "CSV Files (*.csv);;All Files (*)");
-
+//"/home/rubyddong/UI/'Y-2024 (1).csv'";
   if (filename.isEmpty()) {
     return;
   }

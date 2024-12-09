@@ -11,18 +11,23 @@
 
 
  compliancePage::compliancePage() : QWidget() {
+    qDebug() << "A";
     setupUI();
+    qDebug() << "B";
     connect(pollutantComboBox, &QComboBox::currentTextChanged, //takes the string value of text that's changed
-    &PollutantDataset::instance(), &PollutantDataset::onPollutantChanged); //send the string value to onPollutantChanged();
+    &PollutantDataset::instance(), &PollutantDataset::onPollutantChanged);
+    qDebug() << "C"; //send the string value to onPollutantChanged();
     connect(complianceComboBox, &QComboBox::currentTextChanged,
     &PollutantDataset::instance(), &PollutantDataset::onComplianceChanged);
-    connect(&LocationDataset::instance(), &LocationDataset::dataUpdated, this, &compliancePage::LupdateChart);
-    connect(&PollutantDataset::instance(), &PollutantDataset::dataUpdated, this, &compliancePage::PupdateChart);
-}
+    qDebug() << "D";
+    connect(&LocationDataset::instance(), &LocationDataset::dataUpdated, this, &compliancePage::updateDropdown);
+    qDebug() << "E"; 
+    connect(&PollutantDataset::instance(), &PollutantDataset::dataUpdated, this, &compliancePage::updateChart);
+ }
 
 void compliancePage::setupUI() {
-  QVBoxLayout *mainLayout = new QVBoxLayout(this);
-  QHBoxLayout *dropdown = new QHBoxLayout(this);
+  QVBoxLayout *mainLayout = new QVBoxLayout();
+  QHBoxLayout *dropdown = new QHBoxLayout();
   //for charts!==============================
   series = new QBarSeries();
   chart = new QChart();
@@ -31,7 +36,8 @@ void compliancePage::setupUI() {
   chart->createDefaultAxes();
   chartView = new QChartView(chart);
   chartView->setRenderHint(QPainter::Antialiasing);
-  
+  barSet = new QBarSet("Pollutants");
+
   
   //for dropdowns!=============================
   pollutantComboBox = new QComboBox();
@@ -50,11 +56,9 @@ void compliancePage::setupUI() {
 
   setLayout(mainLayout);
 
-  updateToolBar();
-
 }
 
-void compliancePage::updateToolBar() { 
+  void compliancePage::updateDropdown() { 
   std::vector<std::string> pollutants = LocationDataset::instance().getPollutants();
   QStringList pollutantList; //making string array item for Qt!!
   for (const auto &pollutant : pollutants) {
@@ -73,25 +77,36 @@ void compliancePage::updateToolBar() {
   pollutantComboBox->setCompleter(completer);
 }
 
-void compliancePage::PupdateChart() {
- 
-  // const auto &PollutantDataset = PollutantDataset::instance().data;
-  makeNewChart(PollutantDataset::instance().data);
-}
-
-void compliancePage::LupdateChart() {
- 
-  // const auto &LocationDataset = LocationDataset::instance().data;
-  makeNewChart(LocationDataset::instance().data);
-}
+//   void compliancePage::updateDropdown1() { 
+//   //now let's add compliance dropdown
+//   std::vector<bool> compliances = PollutantDataset::instance().getCompliances();
+//   for (bool value : compliances) {
+//     complianceComboBox->addItem(value ? "true" : "false");
+//   }
+// }
 
 
-void compliancePage::makeNewChart(const std::vector<Sample> &dataset) {
+void compliancePage::updateChart() {
+   qDebug() << "Update Pchart triggered";
 
-  QBarSet *barSet = new QBarSet("Pollutants");
-    for (const auto &sampleData : dataset) {
-        barSet->append(std::stod(sampleData.getDeterminand().getUnit())); // change this to Qstring
+    // for (int i = 0; i < barSet->count(); ++i) {
+    // barSet->replace(i, 0); // Replace each value with 0
+    // }
+    if (series != nullptr) {
+    chart->removeSeries(series);
+    delete series;
+    }
+    // chart->removeSeries(series); 
+    // delete series;
+    qDebug() << "0.5";
+    series = new QBarSeries();
+    chart->addSeries(series);
+    qDebug() << "1";
 
+    int i = 0;
+    for (const auto &sampleData : PollutantDataset::instance().data) {
+        barSet->append(sampleData.getResult().getValue()); // change this to Qstring
+        qDebug() << i; i++;
         // Set color based on the boolean flag
         if (sampleData.getIsComplianceSample()) {
             barSet->setColor(Qt::green); // Green for true
@@ -99,14 +114,19 @@ void compliancePage::makeNewChart(const std::vector<Sample> &dataset) {
             barSet->setColor(Qt::red);   // Red for false
         }
     }    
-    chart->removeAllSeries();
+
+    qDebug() << "2";
+    // series = new QBarSeries();
+    // chart->addSeries(series);
 
     // QBarSeries *series = new QBarSeries();
 
     series->append(barSet); // bars to series
 
+    qDebug() << "3";
+
     QBarCategoryAxis *axisX = new QBarCategoryAxis();
-    for (const auto &sampleData : dataset) {
+    for (const auto &sampleData : PollutantDataset::instance().data) {
       axisX->append(QString::fromStdString(sampleData.getDeterminand().getLabel()));
     }
     chart->addAxis(axisX, Qt::AlignBottom);
@@ -117,8 +137,16 @@ void compliancePage::makeNewChart(const std::vector<Sample> &dataset) {
     chart->addAxis(axisY, Qt::AlignLeft);  
     series->attachAxis(axisY); //add to series
 
-    chart->addSeries(series); // all the series to chart
+ // all the series to chart
 
- }
+}
+
+
+// void compliancePage::LupdateChart() {
+//      qDebug() << "Update Lchart triggered";
+
+//   // const auto &LocationDataset = LocationDataset::instance().data;
+//   makeNewChart(LocationDataset::instance().data);
+// }
 
 
