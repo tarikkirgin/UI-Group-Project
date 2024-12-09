@@ -16,11 +16,20 @@ void PollutantOverviewPage::setupUI() {
   mainLayout = new QVBoxLayout();
   scrollArea = new QScrollArea();
   scrollArea->setWidgetResizable(true);
+  scrollArea->setFrameShape(QFrame::NoFrame);
 
   centralWidget = new QWidget();
   contentLayout = new QVBoxLayout();
 
+  QLabel *title = new QLabel();
+  title->setText("Pollutant Overview Page");
+  title->setAlignment(Qt::AlignCenter);
+  title->setStyleSheet("padding: 0px; margin: 0px; font-size: 16px; "
+                       "font-weight: bold;");
+  contentLayout->addWidget(title);
+
   searchBar = new QLineEdit();
+  searchBar->setMaximumWidth(200);
   searchBar->setPlaceholderText("Type to filter pollutants...");
   connect(searchBar, &QLineEdit::textChanged, this,
           &PollutantOverviewPage::filterCards);
@@ -34,21 +43,31 @@ void PollutantOverviewPage::setupUI() {
   axisX->setTitleText("Date");
 
   axisY = new QValueAxis();
-  axisY->setTitleText("Value ug/l");
+  axisY->setTitleText("Value (ug/l)");
 
   chartView = new QChartView(chart);
   chartView->setRenderHint(QPainter::Antialiasing);
-  chartView->setMinimumWidth(800);
-  chartView->setFixedHeight(400);
-  chartView->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+  chartView->setMinimumWidth(400);
+  chartView->setMinimumHeight(400);
 
   chartScrollArea = new QScrollArea();
-  chartScrollArea->setWidgetResizable(false);
+  chartScrollArea->setWidgetResizable(true);
   chartScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
   chartScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   chartScrollArea->setWidget(chartView);
+  chartScrollArea->setMinimumHeight(400);
+  chartScrollArea->setFrameShape(QFrame::NoFrame);
+  contentLayout->addWidget(chartScrollArea);
+
+  QLabel *pollutantCardsTitle = new QLabel();
+  pollutantCardsTitle->setText("Pollutant levels");
+  pollutantCardsTitle->setStyleSheet(
+      "padding: 0px; margin: 0px; font-size: 14px; "
+      "font-weight: bold;");
+  contentLayout->addWidget(pollutantCardsTitle);
 
   cardContainer = new QWidget();
+  contentLayout->addWidget(cardContainer);
   flowLayout = new FlowLayout(cardContainer, -1, 20, 20);
 
   for (auto pollutant = determinandsMap.begin();
@@ -59,9 +78,6 @@ void PollutantOverviewPage::setupUI() {
     flowLayout->addWidget(pollutant_card);
     pollutantCards.push_back(pollutant_card);
   }
-
-  contentLayout->addWidget(chartScrollArea);
-  contentLayout->addWidget(cardContainer);
 
   centralWidget->setLayout(contentLayout);
 
