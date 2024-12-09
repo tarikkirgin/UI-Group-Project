@@ -16,8 +16,8 @@ void EnvironmentalLitterPage::setupUI() {
     mainLayout->setSpacing(10);
 
     // Title layout
-    QHBoxLayout *topLayout = new QHBoxLayout();
-    topLayout->setContentsMargins(0, 0, 0, 0);
+    QHBoxLayout *titleLayout = new QHBoxLayout();
+    titleLayout->setContentsMargins(0, 0, 0, 0);
 
     QLabel *title = new QLabel();
     title->setText("Environmental Litter Indicators");
@@ -27,42 +27,42 @@ void EnvironmentalLitterPage::setupUI() {
     int textHeight = fm.height();
     title->setMinimumHeight(textHeight);
     title->setMaximumHeight(textHeight);
-    topLayout->addWidget(title);
+    titleLayout->addWidget(title);
+
+    // checkbox part
+    QHBoxLayout *topLayout = new QHBoxLayout();
+    QHBoxLayout *checkboxRowLayout = new QHBoxLayout();
+    checkboxRowLayout->setContentsMargins(0,0,0,0);
+    checkboxRowLayout->setSpacing(20);
+
+    checkboxRowLayout->setAlignment(Qt::AlignCenter);
+
+    litter_type_1 = new QCheckBox("Other Litter (incl. plastics)");
+    litter_type_2 = new QCheckBox("Tarry Residue");
+    litter_type_3 = new QCheckBox("Sewage Debris");
+
+    litter_type_1->setChecked(true);
+    litter_type_2->setChecked(true);
+    litter_type_3->setChecked(true);
+
+
+    checkboxRowLayout->addWidget(litter_type_1);
+    checkboxRowLayout->addWidget(litter_type_2);
+    checkboxRowLayout->addWidget(litter_type_3);
+
+    topLayout->addLayout(checkboxRowLayout);
+
+
+    // gtrid section
+    QGridLayout *gridLayout = new QGridLayout();
+    gridLayout->setContentsMargins(0,0,0,0);
+    gridLayout->setSpacing(10);
 
     // Horizontal layout for three sections
+
     QHBoxLayout *hLayout = new QHBoxLayout();
     hLayout->setContentsMargins(0, 0, 0, 0);
     hLayout->setSpacing(10);
-
-    // Left column (checkbox layout)
-    QVBoxLayout *leftLayout = new QVBoxLayout();
-
-    QVBoxLayout *checkboxLayout = new QVBoxLayout();
-    checkboxLayout->setContentsMargins(0, 0, 0, 0);
-    checkboxLayout->setSpacing(1);
-
-    QLabel *left_label = new QLabel();
-    left_label->setText("Types of Litter:");
-    left_label->setStyleSheet("margin-bottom: 1px; font-weight: bold; border: 1px solid green;"); 
-    QFontMetrics font(left_label->font());
-    int labeltextHeight = font.height();
-    left_label->setMinimumHeight(labeltextHeight);
-    left_label->setMaximumHeight(labeltextHeight);
-
-    litter_type_1 = new QCheckBox("Litter Type 1");
-    litter_type_2 = new QCheckBox("Litter Type 2");
-    litter_type_3 = new QCheckBox("Litter Type 3");
-
-    litter_type_1->setStyleSheet("border: 1px solid orange;"); // Border for debugging
-    litter_type_2->setStyleSheet("border: 1px solid orange;"); // Border for debugging
-    litter_type_3->setStyleSheet("border: 1px solid orange;"); // Border for debugging
-
-    checkboxLayout->addWidget(left_label);
-    checkboxLayout->addWidget(litter_type_1);
-    checkboxLayout->addWidget(litter_type_2);
-    checkboxLayout->addWidget(litter_type_3);
-
-    leftLayout->addLayout(checkboxLayout);
 
     // Middle column
     QVBoxLayout *chartLayout = new QVBoxLayout();
@@ -76,20 +76,23 @@ void EnvironmentalLitterPage::setupUI() {
 
     // Right column
     QVBoxLayout *rightLayout = new QVBoxLayout();
-    QLabel *right_label = new QLabel();
-    right_label->setText("Right");
-    right_label->setAlignment(Qt::AlignCenter);
-    right_label->setStyleSheet("border: 1px solid yellow;"); // Border for debugging
-    rightLayout->addWidget(right_label);
+    pieChart = new QChart();
+    pieChartView = new QChartView(pieChart);
+    pieChartView->setRenderHint(QPainter::Antialiasing);
+    rightLayout->addWidget(pieChartView);
 
     // Add layouts to the horizontal layout
-    hLayout->addLayout(leftLayout);
-    hLayout->addLayout(chartLayout);
-    hLayout->addLayout(rightLayout);
+    gridLayout->addLayout(chartLayout, 0, 0);
+    gridLayout->addLayout(rightLayout, 0, 1);
+
+    gridLayout->setColumnStretch(0,2);
+    gridLayout->setColumnStretch(1,1);
+
 
     // Add all sections to the main layout
+    mainLayout->addLayout(titleLayout);
     mainLayout->addLayout(topLayout);
-    mainLayout->addLayout(hLayout);
+    mainLayout->addLayout(gridLayout);
 
     setLayout(mainLayout);
 
@@ -116,14 +119,14 @@ void EnvironmentalLitterPage::updateChart() {
 
     const auto &locationDataset = LocationDataset::instance().data;
 
-    // Checkbox-to-determinand map
+    // Map checkboxes to categories
     QMap<QString, QCheckBox *> checkboxMap = {
         {"BWP - O.L.", litter_type_1},
         {"TarryResidus", litter_type_2},
         {"SewageDebris", litter_type_3},
     };
 
-    // Identify active categories
+    // Find active categories based on checkbox selection
     QStringList activeCategories;
     for (auto it = checkboxMap.begin(); it != checkboxMap.end(); ++it) {
         if (it.value() && it.value()->isChecked()) {
@@ -131,13 +134,8 @@ void EnvironmentalLitterPage::updateChart() {
         }
     }
 
-    // Initialize totals for each category
+    // Collect totals per category - go through each record and get the determinand - if activecategories has this determinand, then add the value to litterTotals[determinandLabel]
     QMap<QString, double> litterTotals;
-    for (const QString &category : activeCategories) {
-        litterTotals[category] = 0.0;
-    }
-
-    // Aggregate values
     for (const Sample &sample : locationDataset) {
         QString determinandLabel = QString::fromStdString(sample.getDeterminand().getLabel());
         if (activeCategories.contains(determinandLabel)) {
@@ -145,41 +143,67 @@ void EnvironmentalLitterPage::updateChart() {
         }
     }
 
-    // Debugging
+    // Debugging: Ensure you have computed the right totals
     qDebug() << "Litter Totals:" << litterTotals;
 
-    // Create bar series and ensure separate bars (not stacked)
+    // Set up the bar chart series
     QBarSeries *barSeries = new QBarSeries();
 
-    for (int i = 0; i < activeCategories.size(); ++i) {
-        QBarSet *set = new QBarSet(activeCategories[i]);
-        set->append(litterTotals[activeCategories[i]]);
-        barSeries->append(set);
-    }
 
-    // Set up the X-Axis
+    // For each category selected, add that category's litterTotal to the set
+    QBarSet *set = new QBarSet("Litter Values");
+    for (int i = 0; i < activeCategories.size(); ++i) {
+        set->append(litterTotals[activeCategories[i]]);
+    }
+    barSeries->append(set);
+
+    // Set up X and Y axis properly
     QBarCategoryAxis *axisX = new QBarCategoryAxis();
     axisX->append(activeCategories);
     chart->addAxis(axisX, Qt::AlignBottom);
     barSeries->attachAxis(axisX);
 
-    // Attach Y-Axis
     QValueAxis *axisY = new QValueAxis();
-    double maxValue = 0.0;
-    for (double value : litterTotals.values()) {
+    double maxValue = 0;
+    for (auto value : litterTotals.values()) {
         maxValue = std::max(maxValue, value);
     }
-    axisY->setRange(0, maxValue * 1.2); // Scale Y-axis slightly higher
+    axisY->setRange(0, maxValue * 1.5);
     chart->addAxis(axisY, Qt::AlignLeft);
     barSeries->attachAxis(axisY);
 
-    // Add series to chart
     chart->addSeries(barSeries);
 
-    // Update chart title
-    if (activeCategories.isEmpty()) {
-        chart->setTitle("No data to display");
-    } else {
-        chart->setTitle("Litter Levels by Type");
+    // Set chart title - if its empty say that if not show real title
+    chart->setTitle(activeCategories.isEmpty() ? "No data to display" : "Litter Levels by Type");
+
+    // PIE CHART
+    pieChart->removeAllSeries();
+    QMap<QString, double> totals;
+    double totalSum = 0.0;
+
+    // like earlier go through each record only this time get total of all data so can be used to work out percent for pie chart
+    for (const Sample &sample : locationDataset) {
+        QString determinandLabel = QString::fromStdString(sample.getDeterminand().getLabel());
+        if (activeCategories.contains(determinandLabel)) {
+            double value = sample.getResult().getValue();
+            if (!std::isnan(value) && !std::isinf(value)) {
+                totals[determinandLabel] += value;
+                totalSum += value;
+            }
+        }
     }
+
+    // Create the Pie chart
+    QPieSeries *pieSeries = new QPieSeries();
+    if (totalSum > 0) {
+        for (auto it = totals.begin(); it != totals.end(); ++it) {
+            pieSeries->append(it.key(), it.value());
+        }
+    } else {
+        pieSeries->append("No Data", 1.0);
+    }
+
+    pieChart->addSeries(pieSeries);
+    pieChart->setTitle("Litter Distribution");
 }

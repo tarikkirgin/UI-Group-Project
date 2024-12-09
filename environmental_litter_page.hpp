@@ -5,6 +5,7 @@
 #include <QtCharts/QChartView>
 #include <QtCharts/QlineSeries>
 #include <QtCharts/QBarSeries>
+#include <QtCharts/QPieSeries>
 
 class EnvironmentalLitterPage : public QWidget {
     Q_OBJECT
@@ -23,6 +24,9 @@ private:
     QChart *chart;
     QCheckBox *checkbox;
     QBarSeries *barSeries;
+    QChart *pieChart;
+    QChartView *pieChartView;
+    QPieSeries *pieSeries;
     QCheckBox *litter_type_1;
     QCheckBox *litter_type_2;
     QCheckBox *litter_type_3;
