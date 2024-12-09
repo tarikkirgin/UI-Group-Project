@@ -1,56 +1,47 @@
+// fluorinated_compounds_page.hpp
 #pragma once
+
 #include <QWidget>
-#include <QChartView>
-#include <QLineSeries>
-#include <QValueAxis>
-#include <QPushButton>
+#include <QtCharts>
+#include <QVBoxLayout>
 #include <QLabel>
-#include <QGridLayout>
-#include <QMap>
+#include <QPushButton>
+#include <QDialog>
+#include "dataset.hpp"
 
 class FluorinatedCompoundsPage : public QWidget {
     Q_OBJECT
-
 public:
     explicit FluorinatedCompoundsPage(QWidget* parent = nullptr);
+    
 
-private slots:
-    void updateChart();
-    void switchToMap();
-    void switchToTimeSeries();
-    void showLocationDetails(const QString& location);
-    void showPopupInfo(const QPointF& point);
+    static constexpr double SAFETY_THRESHOLD = 0.1; // μg/L
 
 private:
     void setupUI();
-    void setupChart();
-    void setupMap();
-    void updateMap();
-    QString getComplianceColor(double value);
-    double getPfasLevel(const QString& location);
+    void createChart();
+    void updateStatusIndicators();
+    void showInfoDialog();
+    QColor getStatusColor(double value) const;
+    void processData();
 
-    // UI components
-    QGridLayout* mainLayout;
+    QChart* chart;
     QChartView* chartView;
-    QLineSeries* series;
-    QPushButton* mapViewButton;
-    QPushButton* timeSeriesButton;
-    QLabel* thresholdLabel;
+    QVBoxLayout* mainLayout;
+    QHBoxLayout* statusLayout;
+    std::vector<QLabel*> statusLabels;
+    QPushButton* infoButton;
     
-    // Map components
-    QWidget* mapWidget;
-    QMap<QString, QPushButton*> locationMarkers;
-    QLabel* mapLabel;
-    
-    // Constants
-    static constexpr double PFAS_THRESHOLD = 0.1; // µg/L
-    bool isMapView;
-    
-    // testing 
-    struct PFASData {
+    struct CompoundData {
         QString location;
+        QDateTime time;
         double value;
-        QString timestamp;
     };
-    QVector<PFASData> testData;
+    std::vector<CompoundData> compoundData;
+};
+
+class FluorinatedInfoDialog : public QDialog {
+    Q_OBJECT
+public:
+    explicit FluorinatedInfoDialog(QWidget* parent = nullptr);
 };
