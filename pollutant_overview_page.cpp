@@ -32,9 +32,20 @@ void PollutantOverviewPage::setupUI() {
   chart->addSeries(series);
   chart->setTitle("Pollutant Levels Over Time");
   chart->createDefaultAxes();
+  chart->axes(Qt::Horizontal).first()->setTitleText("Time");
+  chart->axes(Qt::Vertical).first()->setTitleText("Result Value");
 
   chartView = new QChartView(chart);
   chartView->setRenderHint(QPainter::Antialiasing);
+  chartView->setMinimumWidth(800);
+  chartView->setFixedHeight(400);
+  chartView->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+
+  QScrollArea *chartScrollArea = new QScrollArea();
+  chartScrollArea->setWidgetResizable(false);
+  chartScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+  chartScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+  chartScrollArea->setWidget(chartView);
 
   QWidget *cardContainer = new QWidget();
   FlowLayout *flowLayout = new FlowLayout(cardContainer, -1, 20, 20);
@@ -43,12 +54,12 @@ void PollutantOverviewPage::setupUI() {
        pollutant != determinandsMap.end(); pollutant++) {
     PollutantCard *pollutant_card =
         new PollutantCard(pollutant.key().toStdString(), pollutant.value());
-    pollutant_card->setMaximumWidth(350);
+    pollutant_card->setFixedSize(250, 100);
     flowLayout->addWidget(pollutant_card);
     pollutantCards.push_back(pollutant_card);
   }
 
-  contentLayout->addWidget(chartView);
+  contentLayout->addWidget(chartScrollArea);
   contentLayout->addWidget(cardContainer);
 
   centralWidget->setLayout(contentLayout);
@@ -85,7 +96,6 @@ void PollutantOverviewPage::updateChart() {
   const auto &locationDataset = LocationDataset::instance().data;
 
   QMap<QString, QLineSeries *> seriesMap;
-
   QString searchText = searchBar->text().toLower();
 
   for (int i = 0; i < locationDataset.size(); ++i) {
@@ -112,10 +122,6 @@ void PollutantOverviewPage::updateChart() {
     seriesMap[determinandLabel]->append(time, value);
   }
 
-  chart->createDefaultAxes();
-  chart->axes(Qt::Horizontal).first()->setTitleText("Time");
-  chart->axes(Qt::Vertical).first()->setTitleText("Result Value");
-
   if (locationDataset.size() > 0) {
     auto firstSampleTime =
         QDateTime::fromString(
@@ -127,9 +133,9 @@ void PollutantOverviewPage::updateChart() {
                 locationDataset[locationDataset.size() - 1].getTime()),
             Qt::ISODate)
             .toSecsSinceEpoch();
-    chart->axes(Qt::Horizontal)
-        .first()
-        ->setRange(firstSampleTime, lastSampleTime);
+    // chart->axes(Qt::Horizontal)
+    //     .first()
+    //     ->setRange(firstSampleTime, lastSampleTime);
 
     double minValue = std::numeric_limits<double>::max();
     double maxValue = std::numeric_limits<double>::lowest();
@@ -141,6 +147,4 @@ void PollutantOverviewPage::updateChart() {
     }
     chart->axes(Qt::Vertical).first()->setRange(minValue, maxValue);
   }
-
-  chart->setTitle("Pollutant Levels Over Time");
 }
