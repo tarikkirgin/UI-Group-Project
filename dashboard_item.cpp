@@ -15,7 +15,7 @@ void DashboardItem::createMainWidget(const QString &pageDescription) {
   descriptionLabel->setMinimumHeight(40);
   layout->addWidget(descriptionLabel);
 
-  button = new QPushButton("Go to page");
+  button = new QPushButton(tr("Go to page"));
   button->setFixedWidth(100);
   layout->addWidget(button);
 

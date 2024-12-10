@@ -12,7 +12,7 @@ void Dashboard::createMainWidget() {
   layout->setSpacing(30);
 
   title = new QLabel();
-  title->setText("Water Quality Monitor");
+  title->setText(tr("Water Quality Monitor"));
   title->setAlignment(Qt::AlignCenter);
   title->setStyleSheet("padding: 0px; margin: 0px; font-size: 16px; "
                        "font-weight: bold;");
@@ -49,10 +49,10 @@ void Dashboard::createMainWidget() {
 
   footerLabel = new QLabel();
   footerLabel->setText(
-      "<a href='https://environment.data.gov.uk/water-quality/batch/"
-      "measurement?area=3-34&year=2024'>Dataset Source</a> | "
-      "<a href='https://environment.data.gov.uk/water-quality/view/doc/"
-      "reference'>Water Quality Archive Documentation</a>");
+      tr("<a href='https://environment.data.gov.uk/water-quality/batch/"
+         "measurement?area=3-34&year=2024'>Dataset Source</a> | "
+         "<a href='https://environment.data.gov.uk/water-quality/view/doc/"
+         "reference'>Water Quality Archive Documentation</a>"));
   footerLabel->setAlignment(Qt::AlignCenter);
   footerLabel->setOpenExternalLinks(true);
   layout->addWidget(footerLabel);

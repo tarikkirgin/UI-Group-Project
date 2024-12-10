@@ -22,7 +22,7 @@ void PollutantOverviewPage::setupUI() {
   contentLayout = new QVBoxLayout();
 
   QLabel *title = new QLabel();
-  title->setText("Pollutant Overview Page");
+  title->setText(tr("Pollutant Overview Page"));
   title->setAlignment(Qt::AlignCenter);
   title->setStyleSheet("padding: 0px; margin: 0px; font-size: 16px; "
                        "font-weight: bold;");
@@ -30,20 +30,20 @@ void PollutantOverviewPage::setupUI() {
 
   searchBar = new QLineEdit();
   searchBar->setMaximumWidth(200);
-  searchBar->setPlaceholderText("Type to filter pollutants...");
+  searchBar->setPlaceholderText(tr("Type to filter pollutants..."));
   connect(searchBar, &QLineEdit::textChanged, this,
           &PollutantOverviewPage::filterCards);
   contentLayout->addWidget(searchBar);
 
   chart = new QChart();
-  chart->setTitle("Pollutant Levels Over Time");
+  chart->setTitle(tr("Pollutant Levels Over Time"));
 
   axisX = new QDateTimeAxis();
   axisX->setFormat("MMM yyyy");
-  axisX->setTitleText("Date");
+  axisX->setTitleText(tr("Date"));
 
   axisY = new QValueAxis();
-  axisY->setTitleText("Value (ug/l)");
+  axisY->setTitleText(tr("Concentration (ug/l)"));
 
   chartView = new QChartView(chart);
   chartView->setRenderHint(QPainter::Antialiasing);
@@ -60,7 +60,7 @@ void PollutantOverviewPage::setupUI() {
   contentLayout->addWidget(chartScrollArea);
 
   QLabel *pollutantCardsTitle = new QLabel();
-  pollutantCardsTitle->setText("Pollutant levels");
+  pollutantCardsTitle->setText(tr("Pollutant levels"));
   pollutantCardsTitle->setStyleSheet(
       "padding: 0px; margin: 0px; font-size: 14px; "
       "font-weight: bold;");
