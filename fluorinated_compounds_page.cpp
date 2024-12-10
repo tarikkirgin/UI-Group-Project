@@ -120,11 +120,9 @@ void FluorinatedCompoundsPage::updateLocationList() {
     
     const auto& allData = Dataset::instance().data;
     QMap<QString, int> locationDataCount;  
-    // Used to count the number of data points per location
-
     QString selectedCompound = compoundSelector->currentText();
     
-    // First count the number of valid data points at each location
+    // 统计每个位置的有效数据点数量
     for (const auto& sample : allData) {
         QString determinandLabel = QString::fromStdString(sample.getDeterminand().getLabel());
         if (determinandLabel.startsWith(selectedCompound)) {
@@ -133,49 +131,53 @@ void FluorinatedCompoundsPage::updateLocationList() {
                 double value = sample.getResult().getValue();
                 if (!std::isnan(value) && value >= 0) {
                     locationDataCount[location]++;
+                    qDebug() << "Location:" << location << "Count:" << locationDataCount[location];
                 }
             }
         }
     }
     
-    // Add only locations with multiple data points
+    // 只添加有2个以上数据点的位置
     QStringList locationList;
     for (auto it = locationDataCount.constBegin(); it != locationDataCount.constEnd(); ++it) {
-        if (it.value() > 1) {  // Only add locations with more than one data point
+        if (it.value() > 2) {  // 改为大于2个数据点
             locationList.append(it.key());
+            qDebug() << "Added location:" << it.key() << "with" << it.value() << "data points";
         }
     }
     
     if (locationList.isEmpty()) {
         locationSelector->addItem(tr("No data available"));
         locationSelector->setEnabled(false);
+        qDebug() << "No locations with more than 2 data points";
     } else {
         std::sort(locationList.begin(), locationList.end());
         locationSelector->addItems(locationList);
         locationSelector->setEnabled(true);
         
-        //Restore previous selection (if possible)
         int index = locationSelector->findText(currentLocation);
         if (index >= 0) {
             locationSelector->setCurrentIndex(index);
         }
+        qDebug() << "Added" << locationList.size() << "locations to selector";
     }
     
     updateChart();
 }
 
 void FluorinatedCompoundsPage::processData() {
-    qDebug() << "Start processing data...";
+    qDebug() << "开始处理数据...";
     compoundData.clear();
     const auto& allData = Dataset::instance().data;
     QString selectedLocation = locationSelector->currentText();
     QString selectedCompound = compoundSelector->currentText();
     
     if (selectedLocation.isEmpty() || selectedLocation == tr("No data available")) {
+        qDebug() << "No valid location selected";
         return;
     }
     
-    QVector<CompoundData> tempData;  // Temporarily store all data points
+    QVector<CompoundData> tempData;
     
     for (const auto& sample : allData) {
         QString determinandLabel = QString::fromStdString(sample.getDeterminand().getLabel());
@@ -195,20 +197,21 @@ void FluorinatedCompoundsPage::processData() {
             data.time = time;
             data.value = value;
             tempData.push_back(data);
+            qDebug() << "Found valid data point:" << timeStr << value;
         }
     }
     
-    // Use these data only if the number of data points is greater than 1
-    if (tempData.size() > 1) {
+    // 只有当数据点数量大于2时才使用这些数据
+    if (tempData.size() > 2) {
         compoundData = tempData;
-        // Sort by time
         std::sort(compoundData.begin(), compoundData.end(),
                   [](const CompoundData& a, const CompoundData& b) {
                       return a.time < b.time;
                   });
+        qDebug() << "Processed" << compoundData.size() << "data points for charting";
+    } else {
+        qDebug() << "Not enough data points:" << tempData.size() << "found (need >2)";
     }
-    
-    
 }
 
 void FluorinatedCompoundsPage::updateChart() {
@@ -227,26 +230,26 @@ void FluorinatedCompoundsPage::updateChart() {
 
     if (compoundData.empty()) {
         chart->setTitle(tr("No data available for selected combination"));
+        qDebug() << "No data available for charting";
         return;
     }
 
-    // Create series
+    // Create series and set data
     auto series = new QLineSeries(chart);
     series->setName(QString("%1 - %2").arg(selectedCompound, selectedLocation));
     
-    // Set line style
     QPen pen(Qt::blue);
     pen.setWidth(2);
     series->setPen(pen);
 
-    // Add data points
     for (const auto &data : compoundData) {
         series->append(data.time.toMSecsSinceEpoch(), data.value);
+        qDebug() << "Adding point to chart:" << data.time.toString() << data.value;
     }
     
     chart->addSeries(series);
 
-    // Set up axes
+    // 设置坐标轴
     auto axisX = new QDateTimeAxis;
     axisX->setFormat("yyyy-MM-dd");
     axisX->setTitleText(tr("Dates"));
@@ -261,6 +264,7 @@ void FluorinatedCompoundsPage::updateChart() {
         maxValue = qMax(maxValue, data.value);
     }
     axisY->setMax(maxValue * 1.2);
+    
     chart->addAxis(axisY, Qt::AlignLeft);
 
     series->attachAxis(axisX);
@@ -272,6 +276,8 @@ void FluorinatedCompoundsPage::updateChart() {
     
     chart->legend()->setVisible(true);
     chart->legend()->setAlignment(Qt::AlignRight);
+    
+    qDebug() << "Chart updated successfully";
 }
 
 QColor FluorinatedCompoundsPage::getStatusColor(double value) const {
