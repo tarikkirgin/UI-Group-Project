@@ -73,7 +73,7 @@ void PollutantOverviewPage::setupUI() {
   for (auto pollutant = determinandsMap.begin();
        pollutant != determinandsMap.end(); pollutant++) {
     PollutantCard *pollutant_card =
-        new PollutantCard(pollutant.key().toStdString(), pollutant.value());
+        new PollutantCard(pollutant.key().toStdString(), 0.5);
     pollutant_card->setFixedSize(250, 100);
     flowLayout->addWidget(pollutant_card);
     pollutantCards.push_back(pollutant_card);
@@ -108,10 +108,9 @@ void PollutantOverviewPage::filterCards() {
 
 void PollutantOverviewPage::updateChart() {
   chart->removeAllSeries();
+  seriesMap.clear();
 
   const auto &locationDataset = LocationDataset::instance().data;
-
-  QMap<QString, QLineSeries *> seriesMap;
   QString searchText = searchBar->text().toLower();
 
   for (int i = 0; i < locationDataset.size(); ++i) {
@@ -127,6 +126,9 @@ void PollutantOverviewPage::updateChart() {
     if (!seriesMap.contains(determinandLabel)) {
       QLineSeries *newSeries = new QLineSeries();
       newSeries->setName(determinandLabel);
+      newSeries->setPointsVisible(true);
+      connect(newSeries, &QLineSeries::hovered, this,
+              &PollutantOverviewPage::onPointHovered);
       seriesMap[determinandLabel] = newSeries;
       chart->addSeries(newSeries);
       newSeries->attachAxis(axisX);
@@ -161,5 +163,32 @@ void PollutantOverviewPage::updateChart() {
     }
     axisY->setRange(minValue, maxValue);
     chart->addAxis(axisY, Qt::AlignLeft);
+  }
+}
+
+void PollutantOverviewPage::onPointHovered(const QPointF &point, bool state) {
+  // cast sent pointer to QLineSeries*
+  QLineSeries *series = qobject_cast<QLineSeries *>(sender());
+  if (!series)
+    return;
+
+  QString determinandName;
+  for (auto it = seriesMap.begin(); it != seriesMap.end(); ++it) {
+    if (it.value() == series) {
+      determinandName = it.key();
+      break;
+    }
+  }
+
+  if (state) { // hover starts
+    QString tooltipText =
+        QString("Determinand: %1\nValue: %2\nTime: %3")
+            .arg(determinandName)
+            .arg(point.y())
+            .arg(QDateTime::fromMSecsSinceEpoch(point.x()).toString(
+                "yyyy-MM-dd hh:mm:ss"));
+    QToolTip::showText(QCursor::pos(), tooltipText, chartView);
+  } else { // hover ends
+    QToolTip::hideText();
   }
 }

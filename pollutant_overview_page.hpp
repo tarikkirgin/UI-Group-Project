@@ -17,6 +17,9 @@ class PollutantOverviewPage : public QWidget {
 public:
   PollutantOverviewPage();
 
+private slots:
+  void onPointHovered(const QPointF &point, bool state);
+
 private:
   void setupUI();
   void updateChart();
@@ -39,4 +42,5 @@ private:
       {"Chloroform", 0.75}, {"112TCEthan", 0.60}, {"Atrazine", 0.85}};
 
   QList<PollutantCard *> pollutantCards;
+  QMap<QString, QLineSeries *> seriesMap;
 };
