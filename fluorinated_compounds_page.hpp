@@ -1,4 +1,3 @@
-// fluorinated_compounds_page.hpp
 #pragma once
 
 #include <QWidget>
@@ -7,14 +6,14 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QDialog>
-#include "dataset.hpp"
+#include <QFile>
+#include <QTextStream>
+#include <QRegularExpression> 
 
 class FluorinatedCompoundsPage : public QWidget {
     Q_OBJECT
 public:
     explicit FluorinatedCompoundsPage(QWidget* parent = nullptr);
-    
-
     static constexpr double SAFETY_THRESHOLD = 0.1; // μg/L
 
 private:
@@ -23,7 +22,7 @@ private:
     void updateStatusIndicators();
     void showInfoDialog();
     QColor getStatusColor(double value) const;
-    void processData();
+    bool loadDataFromCSV(const QString& filename);
 
     QChart* chart;
     QChartView* chartView;
