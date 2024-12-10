@@ -1,21 +1,61 @@
 #include "dashboard.hpp"
 #include "dashboard_item.hpp"
+#include <QtWidgets>
 
-Dashboard::Dashboard() { createMainWidget(); }
+Dashboard::Dashboard(const QMap<QString, QString> &pageDetails)
+    : QWidget(), pageDetails(pageDetails) {
+  createMainWidget();
+}
 
 void Dashboard::createMainWidget() {
-  layout = new QVBoxLayout(this);
+  layout = new QVBoxLayout();
+  layout->setSpacing(30);
 
-  QStringList itemLabels = {"Pollutant Overview",
-                            "Persistent Organic Pollutants (POPs)",
-                            "Environmental Litter Indicators",
-                            "Fluorinated Compounds", "Compliance Dashboard"};
+  title = new QLabel();
+  title->setText("Water Quality Monitor");
+  title->setAlignment(Qt::AlignCenter);
+  title->setStyleSheet("padding: 0px; margin: 0px; font-size: 16px; "
+                       "font-weight: bold;");
+  layout->addWidget(title);
 
-  for (int i = 0; i < itemLabels.size(); ++i) {
-    DashboardItem *item = new DashboardItem(itemLabels[i], i + 1);
+  QScrollArea *scrollArea = new QScrollArea();
+  scrollArea->setFrameStyle(QFrame::NoFrame);
+  scrollArea->setWidgetResizable(true);
+
+  QWidget *scrollWidget = new QWidget();
+  QVBoxLayout *scrollLayout = new QVBoxLayout(scrollWidget);
+  scrollLayout->setSpacing(40);
+
+  QStringList desiredOrder = {
+      "Pollutant Overview",
+      "Persistent Organic Pollutants (POPs)",
+      "Environmental Litter Indicators",
+      "Fluorinated Compounds",
+      "Compliance Dashboard",
+  };
+
+  for (int i = 0; i < desiredOrder.size(); ++i) {
+    DashboardItem *item =
+        new DashboardItem(desiredOrder[i], pageDetails[desiredOrder[i]], i + 1);
     connect(item, &DashboardItem::navigateToPage, this,
             &Dashboard::navigateToPage);
-    layout->addWidget(item);
+    scrollLayout->addWidget(item);
   }
+
+  scrollWidget->setLayout(scrollLayout);
+  scrollArea->setWidget(scrollWidget);
+
+  layout->addWidget(scrollArea);
+
+  footerLabel = new QLabel();
+  footerLabel->setText(
+      "<a href='https://environment.data.gov.uk/water-quality/batch/"
+      "measurement?area=3-34&year=2024'>Dataset Source</a> | "
+      "<a href='https://environment.data.gov.uk/water-quality/view/doc/"
+      "reference'>Water Quality Archive Documentation</a>");
+  footerLabel->setAlignment(Qt::AlignCenter);
+  footerLabel->setOpenExternalLinks(true);
+  layout->addWidget(footerLabel);
+
   setLayout(layout);
 }

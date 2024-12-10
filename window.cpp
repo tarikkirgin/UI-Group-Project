@@ -7,6 +7,23 @@
 #include <QtWidgets>
 
 static const int MIN_WIDTH = 300;
+
+static const QMap<QString, QString> pageDetails = {
+    {"Pollutant Overview",
+     "Common pollutants like 1,1,2-Trichloroethane and Chloroform."},
+    {"Persistent Organic Pollutants (POPs)",
+     "PCBs and other persistent organic pollutants with long-lasting impact "
+     "on the environment and health."},
+    {"Environmental Litter Indicators",
+     "Physical pollutants, such as plastic litter and other visible debris "
+     "in water."},
+    {"Fluorinated Compounds",
+     "Levels of PFAS and other fluorinated compounds monitored for their "
+     "environmental persistence."},
+    {"Compliance Dashboard",
+     "Overview of regulatory compliance across all pollutants showing which "
+     "substances meet or exceed safety standards."}};
+
 Window::Window() : QMainWindow() {
   createMainWidget();
   toolBar = new QToolBar();
@@ -24,7 +41,7 @@ void Window::createMainWidget() {
   stackedWidget = new QStackedWidget();
   setCentralWidget(stackedWidget);
 
-  dashboard = new Dashboard();
+  dashboard = new Dashboard(pageDetails);
   pollutant_overview_page = new PollutantOverviewPage();
   persistent_organic_pollutants_page = new PersistentOrganicPollutantsPage();
   environmental_litter_page = new EnvironmentalLitterPage();
@@ -53,23 +70,48 @@ void Window::createToolBar() {
   homeButton->setText("Home");
   homeButton->setAutoRaise(true);
   toolBar->addWidget(homeButton);
-  toolBar->setContentsMargins(0,0,0,0);
+  toolBar->setContentsMargins(0, 0, 0, 0);
 
-  connect(homeButton, &QToolButton::clicked, this, &Window::switchToDashboard);
+  toolBar->addSeparator();
 
   locationComboBox = new QComboBox();
   locationComboBox->setEditable(true);
   locationComboBox->setMinimumWidth(200);
+  locationComboBox->lineEdit()->setPlaceholderText("Pick location");
   toolBar->addWidget(locationComboBox);
+
+  toolBar->addSeparator();
 
   connect(locationComboBox, &QComboBox::currentTextChanged,
           &LocationDataset::instance(), &LocationDataset::onLocationChanged);
+
+  connect(homeButton, &QToolButton::clicked, this, &Window::switchToDashboard);
+
+  QStringList desiredOrder = {
+      "Pollutant Overview",
+      "Persistent Organic Pollutants (POPs)",
+      "Environmental Litter Indicators",
+      "Fluorinated Compounds",
+      "Compliance Dashboard",
+  };
+
+  for (int i = 0; i < desiredOrder.size(); ++i) {
+    QToolButton *pageButton = new QToolButton();
+    pageButton->setToolTip(desiredOrder[i]);
+    pageButton->setText(desiredOrder[i]);
+    pageButton->setAutoRaise(true);
+    toolBar->addWidget(pageButton);
+    toolBar->setContentsMargins(0, 0, 0, 0);
+
+    connect(pageButton, &QToolButton::clicked, this,
+            [this, i]() { switchPage(i + 1); });
+  }
 }
 
 void Window::updateToolBarLocations() {
   std::vector<std::string> locations = Dataset::instance().getLocations();
   std::sort(locations.begin(), locations.end());
-  
+
   QStringList locationList;
   for (const auto &location : locations) {
     locationList << QString::fromStdString(location);
@@ -137,6 +179,6 @@ void Window::setDataLocation() {
 void Window::about() {
   QMessageBox::about(this, "About Water Quality Monitor",
                      "Water Quality Monitor displays and analyses water "
-                     "quality data loaded from"
+                     "quality data loaded from "
                      "a CSV file.\n\n");
 }
