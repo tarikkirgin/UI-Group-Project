@@ -3,6 +3,11 @@
 #include <QDebug>
 #include <QtWidgets>
 #include <QtCharts>
+#include "pollutant_card.hpp"
+#include "flowlayout.h"
+
+
+
 
 EnvironmentalLitterPage::EnvironmentalLitterPage() : QWidget() {
     setupUI();
@@ -22,7 +27,7 @@ void EnvironmentalLitterPage::setupUI() {
     QLabel *title = new QLabel();
     title->setText("Environmental Litter Indicators");
     title->setAlignment(Qt::AlignCenter);
-    title->setStyleSheet("padding: 0px; margin: 0px; font-size: 16px; font-weight: bold; border: 1px solid red;"); // Border for debugging
+    title->setStyleSheet("padding: 0px; margin: 0px; font-size: 16px; font-weight: bold; ");
     QFontMetrics fm(title->font());
     int textHeight = fm.height();
     title->setMinimumHeight(textHeight);
@@ -31,6 +36,11 @@ void EnvironmentalLitterPage::setupUI() {
 
     // checkbox part
     QHBoxLayout *topLayout = new QHBoxLayout();
+
+    materialDropdown = new QComboBox();
+    materialDropdown->addItem("All materials");
+
+
     QHBoxLayout *checkboxRowLayout = new QHBoxLayout();
     checkboxRowLayout->setContentsMargins(0,0,0,0);
     checkboxRowLayout->setSpacing(20);
@@ -50,7 +60,10 @@ void EnvironmentalLitterPage::setupUI() {
     checkboxRowLayout->addWidget(litter_type_2);
     checkboxRowLayout->addWidget(litter_type_3);
 
+    topLayout->addWidget(materialDropdown);
     topLayout->addLayout(checkboxRowLayout);
+
+    connect(materialDropdown, &QComboBox::currentTextChanged, this, &EnvironmentalLitterPage::updateChart);
 
 
     // gtrid section
@@ -70,7 +83,10 @@ void EnvironmentalLitterPage::setupUI() {
     chart->setTitle("Litter levels by Type");
     chartView = new QChartView(chart);
     chartView->setRenderHint(QPainter::Antialiasing);
+    chartView->setMinimumHeight(300);
     chartLayout->addWidget(chartView);
+
+    
 
 
 
@@ -79,6 +95,7 @@ void EnvironmentalLitterPage::setupUI() {
     pieChart = new QChart();
     pieChartView = new QChartView(pieChart);
     pieChartView->setRenderHint(QPainter::Antialiasing);
+    pieChartView->setMinimumHeight(300);
     rightLayout->addWidget(pieChartView);
 
     // Add layouts to the horizontal layout
@@ -88,11 +105,25 @@ void EnvironmentalLitterPage::setupUI() {
     gridLayout->setColumnStretch(0,2);
     gridLayout->setColumnStretch(1,1);
 
+    // pollutant card layout
+    QWidget *cardContainer = new QWidget();
+    FlowLayout *flowLayout = new FlowLayout(cardContainer, -1, 20, 20);
+
+    for (auto litterType = determinandsMap.begin(); litterType != determinandsMap.end(); litterType++){
+        PollutantCard *pollutant_card = new PollutantCard(litterType.key().toStdString(), litterType.value());
+        pollutant_card->setMaximumWidth(350);
+        flowLayout->addWidget(pollutant_card);
+        pollutantCards.push_back(pollutant_card);
+    }
+
+
+
 
     // Add all sections to the main layout
     mainLayout->addLayout(titleLayout);
     mainLayout->addLayout(topLayout);
     mainLayout->addLayout(gridLayout);
+    mainLayout->addWidget(cardContainer);
 
     setLayout(mainLayout);
 
@@ -100,12 +131,49 @@ void EnvironmentalLitterPage::setupUI() {
     connect(litter_type_1, &QCheckBox::stateChanged, this, &EnvironmentalLitterPage::updateChart);
     connect(litter_type_2, &QCheckBox::stateChanged, this, &EnvironmentalLitterPage::updateChart);
     connect(litter_type_3, &QCheckBox::stateChanged, this, &EnvironmentalLitterPage::updateChart);
+    
+
 }
 
    
 
 void EnvironmentalLitterPage::updateChart() {
+    
     qDebug() << "Update chart triggered";
+
+    
+
+    
+    if (!materialDropdown) {
+        qDebug() << "materialDropdown is not initialized!";
+        return;
+    }
+
+        const auto &data = LocationDataset::instance().data;
+        QSet<QString> materialTypes;
+
+        for (const Sample &sample : data) {
+            if (sample.getResult().getValue() != 0){
+                materialTypes.insert(QString::fromStdString(sample.getSampledMaterialType()));
+                qDebug() << "Material type found:" << sample.getSampledMaterialType();
+            }
+            
+        }
+        for (const QString &materialType : materialTypes) {
+            if (materialDropdown->findText(materialType) == -1){ // if NOT in lready
+                materialDropdown->addItem(materialType);
+            }
+            
+        }
+
+
+    QString selectedMaterial = materialDropdown->currentText();
+    if (selectedMaterial == "All materials") {
+        qDebug() << "Empty?";
+        selectedMaterial.clear();
+    }
+
+
     QChart *chart = chartView->chart();
 
     // Clear existing series and axes
@@ -138,7 +206,8 @@ void EnvironmentalLitterPage::updateChart() {
     QMap<QString, double> litterTotals;
     for (const Sample &sample : locationDataset) {
         QString determinandLabel = QString::fromStdString(sample.getDeterminand().getLabel());
-        if (activeCategories.contains(determinandLabel)) {
+        QString materialLabel = QString::fromStdString(sample.getSampledMaterialType());
+        if ((selectedMaterial.isEmpty() || materialLabel == selectedMaterial) && activeCategories.contains(determinandLabel)) {
             litterTotals[determinandLabel] += sample.getResult().getValue();
         }
     }
@@ -151,10 +220,17 @@ void EnvironmentalLitterPage::updateChart() {
 
 
     // For each category selected, add that category's litterTotal to the set
-    QBarSet *set = new QBarSet("Litter Values");
+    QBarSet *set = new QBarSet("");
+    chart->legend()->setVisible(false);
     for (int i = 0; i < activeCategories.size(); ++i) {
         set->append(litterTotals[activeCategories[i]]);
     }
+
+    connect(set, &QBarSet::hovered, [=](bool status, int index){
+        if (status){
+            QToolTip::showText(QCursor::pos(), QString("Value: %1").arg(set->at(index)));
+        }
+    });
     barSeries->append(set);
 
     // Set up X and Y axis properly
@@ -168,11 +244,14 @@ void EnvironmentalLitterPage::updateChart() {
     for (auto value : litterTotals.values()) {
         maxValue = std::max(maxValue, value);
     }
-    axisY->setRange(0, maxValue * 1.5);
+    double axisMax = std::ceil(maxValue);
+    axisY->setRange(0, axisMax);
     chart->addAxis(axisY, Qt::AlignLeft);
     barSeries->attachAxis(axisY);
 
     chart->addSeries(barSeries);
+
+
 
     // Set chart title - if its empty say that if not show real title
     chart->setTitle(activeCategories.isEmpty() ? "No data to display" : "Litter Levels by Type");
@@ -203,6 +282,7 @@ void EnvironmentalLitterPage::updateChart() {
     } else {
         pieSeries->append("No Data", 1.0);
     }
+
 
     pieChart->addSeries(pieSeries);
     pieChart->setTitle("Litter Distribution");
