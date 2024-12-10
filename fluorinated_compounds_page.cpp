@@ -1,7 +1,9 @@
 #include "fluorinated_compounds_page.hpp"
 #include "location_dataset.hpp"
 #include <QDebug>
+#include <QComboBox>
 
+// Dialog implementation
 FluorinatedInfoDialog::FluorinatedInfoDialog(QWidget *parent)
     : QDialog(parent) {
   setWindowTitle(tr("About Fluoride Compounds"));
@@ -46,220 +48,241 @@ FluorinatedInfoDialog::FluorinatedInfoDialog(QWidget *parent)
   connect(closeButton, &QPushButton::clicked, this, &QDialog::accept);
 }
 
-FluorinatedCompoundsPage::FluorinatedCompoundsPage(QWidget *parent)
+// Main page implementation
+FluorinatedCompoundsPage::FluorinatedCompoundsPage(QWidget* parent)
     : QWidget(parent) {
-  setupUI();
-  // Connect to dataset updates
-  connect(&LocationDataset::instance(), &LocationDataset::dataUpdated, this,
-          &FluorinatedCompoundsPage::updateChart);
-  // Initial update
-  updateChart();
+    setupUI();
+    
+    connect(&Dataset::instance(), &Dataset::dataUpdated,
+            this, &FluorinatedCompoundsPage::updateLocationList);
+    connect(&LocationDataset::instance(), &LocationDataset::dataUpdated,
+            this, &FluorinatedCompoundsPage::updateLocationList);
+            
+    updateLocationList();
 }
 
 void FluorinatedCompoundsPage::setupUI() {
-  mainLayout = new QVBoxLayout(this);
-  mainLayout->setContentsMargins(0, 0, 0, 0);
-  mainLayout->setSpacing(10);
+    mainLayout = new QVBoxLayout(this);
+    mainLayout->setContentsMargins(0, 0, 0, 0);
+    mainLayout->setSpacing(10);
 
-  // Title layout with proper styling
-  auto titleLayout = new QHBoxLayout();
-  titleLayout->setContentsMargins(0, 0, 0, 0);
+    auto titleLabel = new QLabel(tr("Monitoring of fluoride compounds"));
+    titleLabel->setAlignment(Qt::AlignCenter);
+    titleLabel->setStyleSheet(
+        "padding: 0px; margin: 0px; font-size: 16px; font-weight: bold;");
+    QFontMetrics fm(titleLabel->font());
+    titleLabel->setMinimumHeight(fm.height());
+    titleLabel->setMaximumHeight(fm.height());
+    
+    // Add compound selector
+    compoundSelector = new QComboBox(this);
+    compoundSelector->addItems({"PFOS", "PFBA", "PFNS"});
+    compoundSelector->setMinimumWidth(100);
+    connect(compoundSelector, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &FluorinatedCompoundsPage::updateChart);
+    
+    // Add location selector
+    locationSelector = new QComboBox(this);
+    locationSelector->setMinimumWidth(200);
+    connect(locationSelector, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &FluorinatedCompoundsPage::updateChart);
+    
+    auto controlLayout = new QHBoxLayout();
+    controlLayout->addWidget(new QLabel(tr("Compound Type:")));
+    controlLayout->addWidget(compoundSelector);
+    controlLayout->addSpacing(20);
+    controlLayout->addWidget(new QLabel(tr("Select Location:")));
+    controlLayout->addWidget(locationSelector);
+    controlLayout->addStretch();
 
-  auto titleLabel = new QLabel(tr("Monitoring of fluoride compounds"));
-  titleLabel->setAlignment(Qt::AlignCenter);
-  titleLabel->setStyleSheet(
-      "padding: 0px; margin: 0px; font-size: 16px; font-weight: bold;");
-  QFontMetrics fm(titleLabel->font());
-  int textHeight = fm.height();
-  titleLabel->setMinimumHeight(textHeight);
-  titleLabel->setMaximumHeight(textHeight);
-  titleLayout->addWidget(titleLabel);
+    // Chart layout
+    chart = new QChart();
+    chartView = new QChartView(chart);
+    chartView->setRenderHint(QPainter::Antialiasing);
+    chartView->setMinimumHeight(300);
 
-  // Status indicators layout
-  statusLayout = new QHBoxLayout();
-  statusLayout->setContentsMargins(0, 0, 0, 0);
-  statusLayout->setSpacing(20);
-  statusLayout->setAlignment(Qt::AlignCenter);
+    // Info button
+    infoButton = new QPushButton(tr("View Details"));
+    connect(infoButton, &QPushButton::clicked, this,
+            &FluorinatedCompoundsPage::showInfoDialog);
 
-  // Chart layout
-  auto chartLayout = new QVBoxLayout();
-  chart = new QChart();
-  chartView = new QChartView(chart);
-  chartView->setRenderHint(QPainter::Antialiasing);
-  chartView->setMinimumHeight(300);
-  chartLayout->addWidget(chartView);
+    mainLayout->addWidget(titleLabel);
+    mainLayout->addLayout(controlLayout);
+    mainLayout->addWidget(chartView);
+    mainLayout->addWidget(infoButton);
 
-  // Info button
-  infoButton = new QPushButton(tr("View Details"));
-  connect(infoButton, &QPushButton::clicked, this,
-          &FluorinatedCompoundsPage::showInfoDialog);
+    setLayout(mainLayout);
+}
 
-  // Add all layouts to main layout
-  mainLayout->addLayout(titleLayout);
-  mainLayout->addLayout(statusLayout);
-  mainLayout->addLayout(chartLayout);
-  mainLayout->addWidget(infoButton);
+void FluorinatedCompoundsPage::updateLocationList() {
+    QString currentLocation = locationSelector->currentText();
+    locationSelector->clear();
+    
+    const auto& allData = Dataset::instance().data;
+    QMap<QString, int> locationDataCount;  
+    // Used to count the number of data points per location
 
-  setLayout(mainLayout);
+    QString selectedCompound = compoundSelector->currentText();
+    
+    // First count the number of valid data points at each location
+    for (const auto& sample : allData) {
+        QString determinandLabel = QString::fromStdString(sample.getDeterminand().getLabel());
+        if (determinandLabel.startsWith(selectedCompound)) {
+            QString location = QString::fromStdString(sample.getSamplingPoint().getLabel());
+            if (!location.isEmpty()) {
+                double value = sample.getResult().getValue();
+                if (!std::isnan(value) && value >= 0) {
+                    locationDataCount[location]++;
+                }
+            }
+        }
+    }
+    
+    // Add only locations with multiple data points
+    QStringList locationList;
+    for (auto it = locationDataCount.constBegin(); it != locationDataCount.constEnd(); ++it) {
+        if (it.value() > 1) {  // Only add locations with more than one data point
+            locationList.append(it.key());
+        }
+    }
+    
+    if (locationList.isEmpty()) {
+        locationSelector->addItem(tr("No data available"));
+        locationSelector->setEnabled(false);
+    } else {
+        std::sort(locationList.begin(), locationList.end());
+        locationSelector->addItems(locationList);
+        locationSelector->setEnabled(true);
+        
+        //Restore previous selection (if possible)
+        int index = locationSelector->findText(currentLocation);
+        if (index >= 0) {
+            locationSelector->setCurrentIndex(index);
+        }
+    }
+    
+    updateChart();
 }
 
 void FluorinatedCompoundsPage::processData() {
-  compoundData.clear();
-  const auto &dataset = LocationDataset::instance();
-
-  for (const auto &sample : dataset.data) {
-
-    QString determinandLabel =
-        QString::fromStdString(sample.getDeterminand().getLabel());
-    if (!determinandLabel.startsWith("PFOS")) {
-      continue;
+    qDebug() << "Start processing data...";
+    compoundData.clear();
+    const auto& allData = Dataset::instance().data;
+    QString selectedLocation = locationSelector->currentText();
+    QString selectedCompound = compoundSelector->currentText();
+    
+    if (selectedLocation.isEmpty() || selectedLocation == tr("No data available")) {
+        return;
     }
+    
+    QVector<CompoundData> tempData;  // Temporarily store all data points
+    
+    for (const auto& sample : allData) {
+        QString determinandLabel = QString::fromStdString(sample.getDeterminand().getLabel());
+        QString location = QString::fromStdString(sample.getSamplingPoint().getLabel());
+        
+        if (!determinandLabel.startsWith(selectedCompound) || location != selectedLocation) {
+            continue;
+        }
 
-    CompoundData data;
-    QString timeStr = QString::fromStdString(sample.getTime());
-    data.location =
-        QString::fromStdString(sample.getSamplingPoint().getLabel());
-    data.time = QDateTime::fromString(timeStr, Qt::ISODate);
-    data.value = sample.getResult().getValue();
+        QString timeStr = QString::fromStdString(sample.getTime());
+        QDateTime time = QDateTime::fromString(timeStr, Qt::ISODate);
+        double value = sample.getResult().getValue();
 
-    if (data.time.isValid() && !std::isnan(data.value) &&
-        !data.location.isEmpty() && data.value >= 0) {
-
-      compoundData.push_back(data);
-      qDebug() << "Processing PFOS data point:"
-               << "Type:" << determinandLabel << "Location:" << data.location
-               << "Time:" << data.time << "Value:" << data.value;
+        if (time.isValid() && !std::isnan(value) && value >= 0) {
+            CompoundData data;
+            data.location = location;
+            data.time = time;
+            data.value = value;
+            tempData.push_back(data);
+        }
     }
-  }
-
-  std::sort(compoundData.begin(), compoundData.end(),
-            [](const CompoundData &a, const CompoundData &b) {
-              return a.time < b.time;
-            });
-
-  qDebug() << "Total PFOS data points processed:" << compoundData.size();
+    
+    // Use these data only if the number of data points is greater than 1
+    if (tempData.size() > 1) {
+        compoundData = tempData;
+        // Sort by time
+        std::sort(compoundData.begin(), compoundData.end(),
+                  [](const CompoundData& a, const CompoundData& b) {
+                      return a.time < b.time;
+                  });
+    }
+    
+    
 }
 
 void FluorinatedCompoundsPage::updateChart() {
-  qDebug() << "Updating fluorinated compounds chart";
+    QString selectedCompound = compoundSelector->currentText();
+    QString selectedLocation = locationSelector->currentText();
+    
+    qDebug() << "Updating chart for compound:" << selectedCompound 
+             << "at location:" << selectedLocation;
+    
+    processData();
 
-  // Process the latest data
-  processData();
-
-  // Clear existing chart
-  chart->removeAllSeries();
-  while (!chart->axes().isEmpty()) {
-    chart->removeAxis(chart->axes().first());
-  }
-
-  // Create series map
-  QMap<QString, QLineSeries *> seriesMap;
-
-  for (const auto &data : compoundData) {
-    if (!seriesMap.contains(data.location)) {
-      auto series = new QLineSeries(chart);
-      series->setName(data.location);
-      seriesMap[data.location] = series;
+    chart->removeAllSeries();
+    while (!chart->axes().isEmpty()) {
+        chart->removeAxis(chart->axes().first());
     }
 
-    auto series = seriesMap[data.location];
-    series->append(data.time.toMSecsSinceEpoch(), data.value);
-  }
+    if (compoundData.empty()) {
+        chart->setTitle(tr("No data available for selected combination"));
+        return;
+    }
 
-  // Add series to chart
-  for (auto series : seriesMap.values()) {
+    // Create series
+    auto series = new QLineSeries(chart);
+    series->setName(QString("%1 - %2").arg(selectedCompound, selectedLocation));
+    
+    // Set line style
+    QPen pen(Qt::blue);
+    pen.setWidth(2);
+    series->setPen(pen);
+
+    // Add data points
+    for (const auto &data : compoundData) {
+        series->append(data.time.toMSecsSinceEpoch(), data.value);
+    }
+    
     chart->addSeries(series);
-  }
 
-  // Create axes
-  auto axisX = new QDateTimeAxis;
-  axisX->setFormat("yyyy-MM-dd");
-  axisX->setTitleText(tr("Dates"));
-  chart->addAxis(axisX, Qt::AlignBottom);
+    // Set up axes
+    auto axisX = new QDateTimeAxis;
+    axisX->setFormat("yyyy-MM-dd");
+    axisX->setTitleText(tr("Dates"));
+    chart->addAxis(axisX, Qt::AlignBottom);
 
-  auto axisY = new QValueAxis;
-  axisY->setTitleText(tr("Concentration (μg/L)"));
-  axisY->setMin(0);
-  chart->addAxis(axisY, Qt::AlignLeft);
+    auto axisY = new QValueAxis;
+    axisY->setTitleText(tr("Concentration (μg/L)"));
+    axisY->setMin(0);
+    
+    double maxValue = 0;
+    for (const auto &data : compoundData) {
+        maxValue = qMax(maxValue, data.value);
+    }
+    axisY->setMax(maxValue * 1.2);
+    chart->addAxis(axisY, Qt::AlignLeft);
 
-  // Add safety threshold line
-  auto threshold = new QLineSeries(chart);
-  threshold->setName(tr("Safety Threshold"));
-
-  if (!compoundData.empty()) {
-    auto minTime = compoundData.front().time.toMSecsSinceEpoch();
-    auto maxTime = compoundData.back().time.toMSecsSinceEpoch();
-    threshold->append(minTime, SAFETY_THRESHOLD);
-    threshold->append(maxTime, SAFETY_THRESHOLD);
-  }
-
-  QPen pen(Qt::red);
-  pen.setStyle(Qt::DashLine);
-  threshold->setPen(pen);
-  chart->addSeries(threshold);
-
-  // Attach axes to series
-  for (auto series : seriesMap.values()) {
     series->attachAxis(axisX);
     series->attachAxis(axisY);
-  }
-  threshold->attachAxis(axisX);
-  threshold->attachAxis(axisY);
 
-  chart->setTitle(tr("Trends in Fluoride Concentrations"));
-
-  // Update status indicators
-  updateStatusIndicators();
+    chart->setTitle(tr("%1 Concentration Trends - %2")
+                   .arg(selectedCompound)
+                   .arg(selectedLocation));
+    
+    chart->legend()->setVisible(true);
+    chart->legend()->setAlignment(Qt::AlignRight);
 }
 
 QColor FluorinatedCompoundsPage::getStatusColor(double value) const {
-  if (value > SAFETY_THRESHOLD * 1.5)
-    return Qt::red;
-  if (value > SAFETY_THRESHOLD)
-    return QColor(255, 165, 0); // Orange
-  return Qt::green;
-}
-
-void FluorinatedCompoundsPage::updateStatusIndicators() {
-  // Clear existing labels
-  for (auto label : statusLabels) {
-    statusLayout->removeWidget(label);
-    delete label;
-  }
-  statusLabels.clear();
-
-  // Create a new label
-  QMap<QString, double> latestValues;
-  for (const auto &data : compoundData) {
-    latestValues[data.location] = data.value;
-  }
-
-  for (auto it = latestValues.begin(); it != latestValues.end(); ++it) {
-    auto container = new QWidget(this);
-    auto layout = new QVBoxLayout(container);
-
-    auto locationLabel = new QLabel(it.key(), container);
-    auto valueLabel =
-        new QLabel(QString("%1 μg/L").arg(it.value(), 0, 'f', 3), container);
-
-    QFont valueFont = valueLabel->font();
-    valueFont.setPointSize(12);
-    valueFont.setBold(true);
-    valueLabel->setFont(valueFont);
-
-    valueLabel->setStyleSheet(
-        QString("color: %1").arg(getStatusColor(it.value()).name()));
-
-    layout->addWidget(locationLabel);
-    layout->addWidget(valueLabel);
-
-    statusLayout->addWidget(container);
-    statusLabels.push_back(locationLabel);
-    statusLabels.push_back(valueLabel);
-  }
+    if (value > SAFETY_THRESHOLD * 1.5)
+        return Qt::red;
+    if (value > SAFETY_THRESHOLD)
+        return QColor(255, 165, 0); // Orange
+    return Qt::green;
 }
 
 void FluorinatedCompoundsPage::showInfoDialog() {
-  FluorinatedInfoDialog dialog(this);
-  dialog.exec();
+    FluorinatedInfoDialog dialog(this);
+    dialog.exec();
 }
