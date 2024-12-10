@@ -2,10 +2,9 @@
 #include <QDebug>
 //this this gonna be used for onLocationChanged
 void LocationDataset::filterDataByLocation(const std::string &location) {
-
-  data.clear(); //this data from LocationDataset Members
-  for (int i = 0; i < Dataset::instance().data.size(); ++i) { // retrieving the data by making object from the dataset by instance()
-    Sample sample = Dataset::instance().data[i]; // data is array of sample
+  data.clear();
+  for (int i = 0; i < Dataset::instance().data.size(); ++i) {
+    Sample sample = Dataset::instance().data[i];
     if (sample.getSamplingPoint().getLabel() == location) {
       data.push_back(sample);
     }
