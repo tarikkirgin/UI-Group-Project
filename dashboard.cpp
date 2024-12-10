@@ -27,11 +27,11 @@ void Dashboard::createMainWidget() {
   scrollLayout->setSpacing(40);
 
   QStringList desiredOrder = {
-      "Pollutant Overview",
-      "Persistent Organic Pollutants (POPs)",
-      "Environmental Litter Indicators",
-      "Fluorinated Compounds",
-      "Compliance Dashboard",
+      tr("Pollutant Overview"),
+      tr("Persistent Organic Pollutants (POPs)"),
+      tr("Environmental Litter Indicators"),
+      tr("Fluorinated Compounds"),
+      tr("Compliance Dashboard"),
   };
 
   for (int i = 0; i < desiredOrder.size(); ++i) {

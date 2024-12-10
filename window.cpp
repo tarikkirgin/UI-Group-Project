@@ -7,27 +7,6 @@
 
 static const int MIN_WIDTH = 300;
 
-QMap<QString, QString> pageDetails = {
-    {QObject::tr("Pollutant Overview"),
-     QObject::tr(
-         "Common pollutants like 1,1,2-Trichloroethane and Chloroform.")},
-    {QObject::tr("Persistent Organic Pollutants (POPs)"),
-     QObject::tr("PCBs and other persistent organic pollutants with "
-                 "long-lasting impact "
-                 "on the environment and health.")},
-    {QObject::tr("Environmental Litter Indicators"),
-     QObject::tr(
-         "Physical pollutants, such as plastic litter and other visible debris "
-         "in water.")},
-    {QObject::tr("Fluorinated Compounds"),
-     QObject::tr(
-         "Levels of PFAS and other fluorinated compounds monitored for their "
-         "environmental persistence.")},
-    {QObject::tr("Compliance Dashboard"),
-     QObject::tr("Overview of regulatory compliance across all pollutants "
-                 "showing which "
-                 "substances meet or exceed safety standards.")}};
-
 Window::Window() : QMainWindow() {
   createMainWidget();
   toolBar = new QToolBar();
@@ -42,6 +21,25 @@ Window::Window() : QMainWindow() {
 }
 
 void Window::createMainWidget() {
+  QMap<QString, QString> pageDetails = {
+      {tr("Pollutant Overview"),
+       tr("Common pollutants like 1,1,2-Trichloroethane and Chloroform.")},
+      {tr("Persistent Organic Pollutants (POPs)"),
+       tr("PCBs and other persistent organic pollutants with "
+          "long-lasting impact "
+          "on the environment and health.")},
+      {tr("Environmental Litter Indicators"),
+       tr("Physical pollutants, such as plastic litter and other "
+          "visible debris "
+          "in water.")},
+      {tr("Fluorinated Compounds"),
+       tr("Levels of PFAS and other fluorinated compounds monitored for their "
+          "environmental persistence.")},
+      {tr("Compliance Dashboard"),
+       tr("Overview of regulatory compliance across all pollutants "
+          "showing which "
+          "substances meet or exceed safety standards.")}};
+
   stackedWidget = new QStackedWidget();
   setCentralWidget(stackedWidget);
 
