@@ -1,48 +1,52 @@
-// fluorinated_compounds_page.hpp
 #pragma once
 
 #include <QWidget>
-#include <QtCharts>
 #include <QVBoxLayout>
+#include <QHBoxLayout>
 #include <QLabel>
 #include <QPushButton>
-#include <QDialog>
-#include "dataset.hpp"
+#include <QtCharts>
+#include <QDateTime>
 
 class FluorinatedCompoundsPage : public QWidget {
     Q_OBJECT
-public:
-    explicit FluorinatedCompoundsPage(QWidget* parent = nullptr);
-    
 
-    static constexpr double SAFETY_THRESHOLD = 0.1; // μg/L
+public:
+    static constexpr double SAFETY_THRESHOLD = 0.1;
+    explicit FluorinatedCompoundsPage(QWidget* parent = nullptr);
 
 private:
-    void setupUI();
-    void createChart();
-    void updateStatusIndicators();
-    void showInfoDialog();
-    QColor getStatusColor(double value) const;
-    void processData();
-    void updateChart();
-
-    QChart* chart;
-    QChartView* chartView;
-    QVBoxLayout* mainLayout;
-    QHBoxLayout* statusLayout;
-    std::vector<QLabel*> statusLabels;
-    QPushButton* infoButton;
-    
     struct CompoundData {
         QString location;
         QDateTime time;
         double value;
     };
-    std::vector<CompoundData> compoundData;
+
+    // UI elements
+    QVBoxLayout* mainLayout;
+    QComboBox* locationSelector; 
+    QComboBox* compoundSelector;    
+    QPushButton* infoButton;
+    QChart* chart;
+    QChartView* chartView;
+
+    // Data
+    QVector<CompoundData> compoundData;
+
+    // Methods
+    void setupUI();
+    void processData();
+    void updateChart();
+    QColor getStatusColor(double value) const;
+    void showInfoDialog();
+
+private slots:
+    void updateLocationList();
 };
 
 class FluorinatedInfoDialog : public QDialog {
     Q_OBJECT
+
 public:
     explicit FluorinatedInfoDialog(QWidget* parent = nullptr);
 };
