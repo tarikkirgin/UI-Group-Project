@@ -1,6 +1,7 @@
 #pragma once
 
 #include "dashboard.hpp"
+#include "fluorinated_compounds_page.hpp"
 #include "persistent_organic_pollutants_page.hpp"
 #include "pollutant_overview_page.hpp"
 #include <QComboBox>
@@ -33,6 +34,7 @@ private:
   Dashboard *dashboard;
   PollutantOverviewPage *pollutant_overview_page;
   PersistentOrganicPollutantsPage *persistent_organic_pollutants_page;
+  FluorinatedCompoundsPage *fluorinated_compounds_page;
 
 private slots:
   void switchPage(int pageIndex);
