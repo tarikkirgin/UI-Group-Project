@@ -1,5 +1,7 @@
 #include "window.hpp"
 #include "dashboard.hpp"
+#include "dataset.hpp"
+#include "fluorinated_compounds_page.hpp"
 #include "location_dataset.hpp"
 #include "persistent_organic_pollutants_page.hpp"
 #include "pollutant_overview_page.hpp"
@@ -47,11 +49,13 @@ void Window::createMainWidget() {
   pollutant_overview_page = new PollutantOverviewPage();
   persistent_organic_pollutants_page = new PersistentOrganicPollutantsPage();
   environmental_litter_page = new EnvironmentalLitterPage();
+  fluorinated_compounds_page = new FluorinatedCompoundsPage();
 
   stackedWidget->addWidget(dashboard);
   stackedWidget->addWidget(pollutant_overview_page);
   stackedWidget->addWidget(persistent_organic_pollutants_page);
   stackedWidget->addWidget(environmental_litter_page);
+  stackedWidget->addWidget(fluorinated_compounds_page);
 
   stackedWidget->setCurrentWidget(dashboard);
 
