@@ -4,7 +4,7 @@
 #include <QLineEdit>
 #include <QStringList>
 #include <QVBoxLayout>
-#include <QWidget>
+#include <QtWidgets>
 #include <QtCharts/QChart>
 #include <QtCharts/QChartView>
 #include <QtCharts/QDateTimeAxis>

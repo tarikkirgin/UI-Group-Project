@@ -1,7 +1,7 @@
 #include "pollutant_card.hpp"
 #include "location_dataset.hpp"
 #include <QVBoxLayout>
-
+//constructor
 PollutantCard::PollutantCard(const std::string &determinandLabel,
                              double complianceLevel)
     : QGroupBox(QString::fromStdString(determinandLabel)),

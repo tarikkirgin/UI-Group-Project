@@ -5,6 +5,7 @@
 #include "persistent_organic_pollutants_page.hpp"
 #include "pollutant_overview_page.hpp"
 #include "environmental_litter_page.hpp"
+#include "compliance_page.hpp"
 #include <QComboBox>
 #include <QLabel>
 #include <QMainWindow>
@@ -37,6 +38,7 @@ private:
   PersistentOrganicPollutantsPage *persistent_organic_pollutants_page;
   EnvironmentalLitterPage *environmental_litter_page;
   FluorinatedCompoundsPage *fluorinated_compounds_page;
+  compliancePage *compliance_page;
 
 private slots:
   void switchPage(int pageIndex);

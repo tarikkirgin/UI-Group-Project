@@ -1,5 +1,7 @@
 #include "sample.hpp"
 
+//basically is a list of constructor for these 4 classes
+
 SamplingPoint::SamplingPoint(const std::string &notation,
                              const std::string &label, int northing,
                              int easting)

@@ -9,6 +9,7 @@
 #include <QtCharts/QBarSeries>
 #include <QtCharts/QBarSet>
 #include <QtCharts/QChart>
+#include <QtWidgets>
 #include <QtCharts/QChartView>
 #include <QtCharts/QValueAxis>
 

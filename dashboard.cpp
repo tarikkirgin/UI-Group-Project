@@ -1,6 +1,7 @@
 #include "dashboard.hpp"
 #include "dashboard_item.hpp"
 #include <QtWidgets>
+#include <QDebug>
 
 Dashboard::Dashboard(const QMap<QString, QString> &pageDetails)
     : QWidget(), pageDetails(pageDetails) {

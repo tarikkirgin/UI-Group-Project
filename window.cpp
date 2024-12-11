@@ -5,6 +5,7 @@
 #include "location_dataset.hpp"
 #include "persistent_organic_pollutants_page.hpp"
 #include "pollutant_overview_page.hpp"
+#include "compliance_page.hpp"
 #include <QtWidgets>
 
 static const int MIN_WIDTH = 300;
@@ -21,7 +22,7 @@ Window::Window() : QMainWindow() {
   setMinimumWidth(MIN_WIDTH);
   setWindowTitle(tr("Water Quality Monitor"));
 }
-
+// defining functions in the classes
 void Window::createMainWidget() {
   QMap<QString, QString> pageDetails = {
       {tr("Pollutant Overview"),
@@ -50,12 +51,14 @@ void Window::createMainWidget() {
   persistent_organic_pollutants_page = new PersistentOrganicPollutantsPage();
   environmental_litter_page = new EnvironmentalLitterPage();
   fluorinated_compounds_page = new FluorinatedCompoundsPage();
+  compliance_page = new compliancePage();
 
   stackedWidget->addWidget(dashboard);
   stackedWidget->addWidget(pollutant_overview_page);
   stackedWidget->addWidget(persistent_organic_pollutants_page);
   stackedWidget->addWidget(environmental_litter_page);
   stackedWidget->addWidget(fluorinated_compounds_page);
+  stackedWidget->addWidget(compliance_page);
 
   stackedWidget->setCurrentWidget(dashboard);
 
@@ -68,7 +71,7 @@ void Window::switchPage(int pageIndex) {
   stackedWidget->setCurrentIndex(pageIndex);
 }
 
-void Window::switchToDashboard() { switchPage(0); }
+void Window::switchToDashboard() { switchPage(0); } 
 
 void Window::createToolBar() {
   homeButton = new QToolButton();
@@ -166,10 +169,10 @@ void Window::addHelpMenu() {
   helpMenu->addAction(aboutQtAction);
 }
 
-void Window::setDataLocation() {
+void Window::setDataLocation() { // 
   QString filename = QFileDialog::getOpenFileName(
       this, "Open CSV File", ".", "CSV Files (*.csv);;All Files (*)");
-
+//"/home/rubyddong/UI/'Y-2024 (1).csv'";
   if (filename.isEmpty()) {
     return;
   }
