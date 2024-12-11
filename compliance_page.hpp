@@ -8,6 +8,7 @@
 #include <QtCharts/QValueAxis>
 #include <QGridLayout>
 #include <vector>
+#include "flowlayout.h"
 
 class compliancePage : public QWidget {
   Q_OBJECT
@@ -25,6 +26,9 @@ public:
   double MAX;
   QScrollArea *scrollArea;
   QVBoxLayout *mainLayout;
+  QHBoxLayout *mainWithScrollLayout;
+  std::vector<QBarSet *> barSets;
+  QWidget *cardContainer;
   // std::vector<QWidget *> cardHolder;
   // std::vector<QVBoxLayout *> cardLayout;
   // std::vector<QLabel *> valueLabel;
@@ -40,9 +44,26 @@ private:
   QComboBox *complianceComboBox;
   void setupUI(); //Have etc and dropdowns and charts
   void updateDropdownChart();
-  void ungetCardUI();
-  void card();
-  void getAverage();
-  void getminMAX();
   void getCardUI();
+  void getAverage();
+  void getminMAX(std::vector<Sample> dataset);
+
+};
+
+class everyPollutantCard : public QGroupBox {
+  Q_OBJECT
+
+public:
+  everyPollutantCard(const std::string &determinandLabel, double complianceLevel);
+  std::string getDeterminandLabel() const { return determinandLabel; }
+
+private slots:
+  void updateUI();
+
+private:
+  void setupUI();
+  std::string determinandLabel;
+  double complianceLevel;
+  QLabel *valueLabel;
+  QLabel *complianceLabel;
 };

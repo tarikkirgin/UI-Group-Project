@@ -117,10 +117,6 @@ void EnvironmentalLitterPage::setupUI() {
     chartView->setMinimumHeight(300);
     chartLayout->addWidget(chartView);
 
-    
-
-
-
     // Right column
     QVBoxLayout *rightLayout = new QVBoxLayout();
     pieChart = new QChart();
@@ -146,7 +142,6 @@ void EnvironmentalLitterPage::setupUI() {
         flowLayout->addWidget(pollutant_card);
         pollutantCards.push_back(pollutant_card);
     }
-
 
 
 

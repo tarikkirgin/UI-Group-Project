@@ -2,27 +2,27 @@
 #include "location_dataset.hpp"
 #include <QVBoxLayout>
 //constructor
-PollutantCard::PollutantCard(const std::string &determinandLabel,
-                             double complianceLevel)
-    : QGroupBox(QString::fromStdString(determinandLabel)),
-      determinandLabel(determinandLabel), complianceLevel(complianceLevel) {
-  setupUI();
+  PollutantCard::PollutantCard(const std::string &determinandLabel,
+                              double complianceLevel)
+      : QGroupBox(QString::fromStdString(determinandLabel)),
+        determinandLabel(determinandLabel), complianceLevel(complianceLevel) {
+    setupUI();
 
-  connect(&LocationDataset::instance(), &LocationDataset::dataUpdated, this,
-          &PollutantCard::updateUI);
-}
+    connect(&LocationDataset::instance(), &LocationDataset::dataUpdated, this,
+            &PollutantCard::updateUI);
+  }
 
-void PollutantCard::setupUI() {
-  auto *layout = new QVBoxLayout();
+  void PollutantCard::setupUI() {
+    auto *layout = new QVBoxLayout()  ;
 
-  valueLabel = new QLabel();
-  complianceLabel = new QLabel();
+    valueLabel = new QLabel();
+    complianceLabel = new QLabel();
 
-  layout->addWidget(valueLabel);
-  layout->addWidget(complianceLabel);
+    layout->addWidget(valueLabel);
+    layout->addWidget(complianceLabel);
 
-  setLayout(layout);
-}
+    setLayout(layout);
+  }
 
 void PollutantCard::updateUI() {
   const auto &locationDataset = LocationDataset::instance().data;
