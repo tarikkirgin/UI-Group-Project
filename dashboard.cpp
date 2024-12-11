@@ -12,7 +12,7 @@ void Dashboard::createMainWidget() {
   layout->setSpacing(30);
 
   title = new QLabel();
-  title->setText(tr("Water Quality Monitor"));
+  title->setText(tr("Dashboard"));
   title->setAlignment(Qt::AlignCenter);
   title->setStyleSheet("padding: 0px; margin: 0px; font-size: 16px; "
                        "font-weight: bold;");
