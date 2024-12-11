@@ -5,19 +5,25 @@ PollutantCard {
   padding: 5px;
   font-weight: bold;
   font-size: 14px;
+  color: black;
+  background-color: white;
+}
+
+PollutantCard QLabel {
+  color: black;
 }
 
 PollutantCard[complianceLevel="high"] {
   border: 2px solid green;
-  color: darkgreen;
+  color: green;
 }
 
 PollutantCard[complianceLevel="medium"] {
   border: 2px solid orange;
-  color: darkorange;
+  color: orange;
 }
 
 PollutantCard[complianceLevel="low"] {
   border: 2px solid red;
-  color: darkred;
+  color: red;
 }

@@ -40,11 +40,11 @@ void PollutantCard::updateUI() {
   }
   if (count > 0) {
     double average = total / count;
-    valueLabel->setText(QString("Average Value: %1 %2")
+    valueLabel->setText(QString(tr("Average Value: %1 %2"))
                             .arg(average)
                             .arg(QString::fromStdString(unit)));
 
-    complianceLabel->setText(QString("Compliance Level: Under %1 %2")
+    complianceLabel->setText(QString(tr("Compliance Level: Under %1 %2"))
                                  .arg(complianceLevel)
                                  .arg(QString::fromStdString(unit)));
     if (average > complianceLevel) {
@@ -55,7 +55,7 @@ void PollutantCard::updateUI() {
       setProperty("complianceLevel", "high");
     }
   } else {
-    valueLabel->setText("Average Value: N/A");
+    valueLabel->setText(tr("Average Value: N/A"));
   }
   style()->unpolish(this);
   style()->polish(this);

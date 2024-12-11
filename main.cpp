@@ -10,6 +10,11 @@ int main(int argc, char *argv[]) {
     app.setStyleSheet(StyleSheet);
   }
 
+  QTranslator trn;
+  if (trn.load(QLocale::system(), "watertool", "_", ":/i18n")) {
+    app.installTranslator(&trn);
+  }
+
   Window window;
   window.show();
 
