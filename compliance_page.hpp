@@ -6,30 +6,43 @@
 #include "sample.hpp"
 #include <QtCharts/QBarCategoryAxis>
 #include <QtCharts/QValueAxis>
+#include <QGridLayout>
+#include <vector>
 
 class compliancePage : public QWidget {
   Q_OBJECT
 
 public:
   compliancePage();
-  std::vector<std::string> existingPollutants;
+  static compliancePage &instance() { // this make sure only one object space is used throughout the whole project.
+    static compliancePage instance;
+    return instance;
+  }
   QBarCategoryAxis *axisX;
   QValueAxis *axisY;
-private:
-  QBarSeries *series;
+  double average;
+  double min;
+  double MAX;
+  QScrollArea *scrollArea;
+  QVBoxLayout *mainLayout;
+  // std::vector<QWidget *> cardHolder;
+  // std::vector<QVBoxLayout *> cardLayout;
+  // std::vector<QLabel *> valueLabel;
+  // std::vector<QLabel *> complianceLabel;
+  QWidget *cards;
+  QGridLayout *cardsLayout = new QGridLayout();
+  std::string getLevel(Sample sample); 
   QChart *chart;
+  QChartView *chartView;
+  QBarSeries *series;
+private:
   QComboBox *pollutantComboBox;
   QComboBox *complianceComboBox;
-
-  // QBarSet *barSet;
-
   void setupUI(); //Have etc and dropdowns and charts
-  void updateChartDropdown();// connect to how the chart reacts to these dropdowns
-  // void PupdateChart();
-  // void makeNewChart(const std::vector<Sample> &dataset); //drop downs for pollutant and compliance and also location on the toolbar
-  void updateDropdown();
-  // void hover(); //reacting to chart when hovering
-  bool checkOverlaps(std::string pollutantName);
-
-  QChartView *chartView;
+  void updateDropdownChart();
+  void ungetCardUI();
+  void card();
+  void getAverage();
+  void getminMAX();
+  void getCardUI();
 };

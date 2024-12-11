@@ -170,7 +170,7 @@ void EnvironmentalLitterPage::setupUI() {
 
 void EnvironmentalLitterPage::updateChart() {
     
-    qDebug() << "Update chart triggered";
+    // qDebug() << "Update chart triggered";
 
     
 
@@ -186,7 +186,7 @@ void EnvironmentalLitterPage::updateChart() {
         for (const Sample &sample : data) {
             if (sample.getResult().getValue() != 0){
                 materialTypes.insert(QString::fromStdString(sample.getSampledMaterialType()));
-                qDebug() << "Material type found:" << sample.getSampledMaterialType();
+                //qDebug() << "Material type found:" << sample.getSampledMaterialType();
             }
             
         }
@@ -200,7 +200,7 @@ void EnvironmentalLitterPage::updateChart() {
 
     QString selectedMaterial = materialDropdown->currentText();
     if (selectedMaterial == "All materials") {
-        qDebug() << "Empty?";
+        // qDebug() << "Empty?";
         selectedMaterial.clear();
     }
 

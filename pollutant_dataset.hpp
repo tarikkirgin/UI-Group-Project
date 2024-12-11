@@ -1,6 +1,6 @@
 #include "dataset.hpp"
 #include "sample.hpp"
-#include "QString"
+#include <QString>
 #include <vector>
 
 class PollutantDataset : public Dataset {
@@ -12,7 +12,7 @@ public:
     return instance;
   }
 
-  std::string getPollutant() const { return pollutant; }
+  QString getPollutant() const { return pollutant; }
   std::vector<Sample> data; // this is key data
 
 public slots:
@@ -20,8 +20,8 @@ public slots:
   void onComplianceChanged(const QString &newCompliance);
 
 private:
-  std::string pollutant;
-  bool compliance;
-  void filterDataByCompliance(const bool &compliance);
-  void filterDataByPollutant(const std::string &pollutant);
+  QString pollutant;
+  QString compliance;
+  void filterDataByCompliance(const QString &compliance);
+  void filterDataByPollutant(const QString &pollutant);
 };
