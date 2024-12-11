@@ -37,6 +37,7 @@ void PollutantOverviewPage::setupUI() {
 
   chart = new QChart();
   chart->setTitle(tr("Pollutant Levels Over Time"));
+  chart->legend()->setShowToolTips(true);
 
   axisX = new QDateTimeAxis();
   axisX->setFormat("MMM yyyy");
