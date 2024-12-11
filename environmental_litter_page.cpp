@@ -234,8 +234,8 @@ void EnvironmentalLitterPage::updateChart() {
   for (auto value : litterTotals.values()) {
     maxValue = std::max(maxValue, value);
   }
-  double axisMax = std::ceil(maxValue);
-  axisY->setRange(0, axisMax);
+  axisY->setRange(0, maxValue);
+  axisY->setTitleText("Litter Levels (garber c / pres/nf)");
   chart->addAxis(axisY, Qt::AlignLeft);
   barSeries->attachAxis(axisY);
 
