@@ -19,6 +19,7 @@ private:
   void setupUI();
   std::string determinandLabel;
   double complianceLevel;
+  double valueLevel;
   QLabel *valueLabel;
   QLabel *complianceLabel;
 };

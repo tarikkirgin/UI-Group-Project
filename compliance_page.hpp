@@ -1,48 +1,47 @@
 #pragma once
-#include <QtWidgets>
+#include "flowlayout.h"
+#include "pollutant_card.hpp"
+#include <QComboBox>
+#include <QLineEdit>
+#include <QString>
+#include <QStringList>
+#include <QVBoxLayout>
+#include <QtCharts/QChart>
 #include <QtCharts/QChartView>
-#include <QBarSet>
-#include <QBarSeries>
-#include "sample.hpp"
-#include <QtCharts/QBarCategoryAxis>
+#include <QtCharts/QDateTimeAxis>
+#include <QtCharts/QLineSeries>
+#include <QtCharts/QPieSeries>
+#include <QtCharts/QPieSlice>
 #include <QtCharts/QValueAxis>
-#include <QGridLayout>
-#include <vector>
+#include <QtWidgets>
 
 class compliancePage : public QWidget {
   Q_OBJECT
 
 public:
   compliancePage();
-  static compliancePage &instance() { // this make sure only one object space is used throughout the whole project.
-    static compliancePage instance;
-    return instance;
-  }
-  QBarCategoryAxis *axisX;
-  QValueAxis *axisY;
-  double average;
-  double min;
-  double MAX;
-  QScrollArea *scrollArea;
-  QVBoxLayout *mainLayout;
-  // std::vector<QWidget *> cardHolder;
-  // std::vector<QVBoxLayout *> cardLayout;
-  // std::vector<QLabel *> valueLabel;
-  // std::vector<QLabel *> complianceLabel;
-  QWidget *cards;
-  QGridLayout *cardsLayout = new QGridLayout();
-  std::string getLevel(Sample sample); 
-  QChart *chart;
-  QChartView *chartView;
-  QBarSeries *series;
+
 private:
-  QComboBox *pollutantComboBox;
-  QComboBox *complianceComboBox;
-  void setupUI(); //Have etc and dropdowns and charts
-  void updateDropdownChart();
-  void ungetCardUI();
-  void card();
-  void getAverage();
-  void getminMAX();
-  void getCardUI();
+  void setupUI();
+  void updateChart();
+  void updateCards();
+  void filterCards();
+
+  QVBoxLayout *mainLayout;
+  QVBoxLayout *contentLayout;
+  QWidget *centralWidget;
+  QScrollArea *scrollArea;
+  QScrollArea *chartScrollArea;
+  QWidget *cardContainer;
+  FlowLayout *flowLayout;
+  QChart *complianceChart;
+  QChartView *complianceChartView;
+  QPieSeries *compliancePieSeries;
+  QChartView *chartView;
+  QDateTimeAxis *axisX;
+  QValueAxis *axisY;
+  QLineEdit *searchBar;
+  QComboBox *complianceLevelFilter;
+
+  QMap<QString, PollutantCard *> pollutantCardsMap;
 };

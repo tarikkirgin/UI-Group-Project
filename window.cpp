@@ -1,11 +1,11 @@
 #include "window.hpp"
+#include "compliance_page.hpp"
 #include "dashboard.hpp"
 #include "dataset.hpp"
 #include "fluorinated_compounds_page.hpp"
 #include "location_dataset.hpp"
 #include "persistent_organic_pollutants_page.hpp"
 #include "pollutant_overview_page.hpp"
-#include "compliance_page.hpp"
 #include <QtWidgets>
 
 static const int MIN_WIDTH = 300;
@@ -71,7 +71,7 @@ void Window::switchPage(int pageIndex) {
   stackedWidget->setCurrentIndex(pageIndex);
 }
 
-void Window::switchToDashboard() { switchPage(0); } 
+void Window::switchToDashboard() { switchPage(0); }
 
 void Window::createToolBar() {
   homeButton = new QToolButton();
@@ -169,10 +169,9 @@ void Window::addHelpMenu() {
   helpMenu->addAction(aboutQtAction);
 }
 
-void Window::setDataLocation() { // 
+void Window::setDataLocation() { //
   QString filename = QFileDialog::getOpenFileName(
       this, "Open CSV File", ".", "CSV Files (*.csv);;All Files (*)");
-//"/home/rubyddong/UI/'Y-2024 (1).csv'";
   if (filename.isEmpty()) {
     return;
   }

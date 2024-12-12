@@ -1,7 +1,7 @@
 #include "pollutant_card.hpp"
 #include "location_dataset.hpp"
 #include <QVBoxLayout>
-//constructor
+// constructor
 PollutantCard::PollutantCard(const std::string &determinandLabel,
                              double complianceLevel)
     : QGroupBox(QString::fromStdString(determinandLabel)),
@@ -39,23 +39,24 @@ void PollutantCard::updateUI() {
     }
   }
   if (count > 0) {
-    double average = total / count;
+    double valueLevel = total / count;
     valueLabel->setText(QString(tr("Average Value: %1 %2"))
-                            .arg(average)
+                            .arg(valueLevel)
                             .arg(QString::fromStdString(unit)));
 
     complianceLabel->setText(QString(tr("Compliance Level: Under %1 %2"))
                                  .arg(complianceLevel)
                                  .arg(QString::fromStdString(unit)));
-    if (average > complianceLevel) {
+    if (valueLevel > complianceLevel) {
       setProperty("complianceLevel", "low");
-    } else if (average == complianceLevel) {
+    } else if (valueLevel == complianceLevel) {
       setProperty("complianceLevel", "medium");
     } else {
       setProperty("complianceLevel", "high");
     }
   } else {
     valueLabel->setText(tr("Average Value: N/A"));
+    setProperty("complianceLevel", "");
   }
   style()->unpolish(this);
   style()->polish(this);
