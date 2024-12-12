@@ -8,7 +8,8 @@
 #include <QtCharts>
 #include <QString>
 #include <QColor>
-
+  
+ double compliancePage::average = 0.0;
 
  compliancePage::compliancePage() : QWidget() {
     // qDebug() << "A";
@@ -114,7 +115,7 @@ void compliancePage::updateDropdownChart() {
     // fill up the barsets=================================================================================
     barSets.clear();
     int i = 0;
-    Determinand temp = LocationDataset::instance().data[0].getDeterminand();  
+    Determinand temp = LocationDataset::instance().data[0].getDeterminand();  // getting the first pollutant
     barSets.push_back(new QBarSet(QString::fromStdString(LocationDataset::instance().data[0].getDeterminand().getLabel())));
     for (const auto &sampleData : LocationDataset::instance().data) {
         if(sampleData.getDeterminand().getLabel() != temp.getLabel()) {
@@ -128,11 +129,11 @@ void compliancePage::updateDropdownChart() {
               } else if (getLevel(sampleData) == "MAX") {
                 barSets[i]->setColor(QColor(139, 0, 0));
               } else if (getLevel(sampleData) == "high") {
-                  barSets[i]->setColor(Qt::red);
+                barSets[i]->setColor(Qt::red);
               } else if (getLevel(sampleData) == "medium") {
-                  barSets[i]->setColor(QColor("#FFBF00"));
+                barSets[i]->setColor(QColor("#FFBF00"));
               } else {
-                  barSets[i]->setColor(Qt::green); 
+                barSets[i]->setColor(Qt::green); 
               }
             *barSets[++i] << sampleData.getResult().getValue();
             temp = sampleData.getDeterminand();
@@ -144,32 +145,14 @@ void compliancePage::updateDropdownChart() {
     chartView->show();          
 }
 
-void compliancePage::getCardUI() { // MAKE CHART DISAPPEAR TOO
-  //  getAverage();
-  // const int maxColumns = 3; // Maximum columns per row
-  // int currentIndex = 0;
-  // int row = currentIndex / maxColumns;
-  // int col = currentIndex % maxColumns;
-  // int i = 0;
-  // for(const auto &data : PollutantDataset::instance().data) {
-  //   QVBoxLayout *cardLayout = new QVBoxLayout();
-  //   QWidget *eachCardContainer = new QWidget();
-  //   eachCardContainer->setLayout(cardLayout);
-  //   QLabel *valueLabel = new QLabel(QString::asprintf("The measurement has %f%s more than average"
-  //   , average - data.getResult().getValue(), data.getDeterminand().getUnit().c_str()));
-  //   QLabel *complianceLabel = new QLabel(QString::asprintf("The compliance indicates %s-level state"
-  //   , getLevel(data).c_str()));
-  //   cardLayout->addWidget(valueLabel);
-  //   cardLayout->addWidget(complianceLabel);
-  //   cardsLayout->addWidget(eachCardContainer, row, col);
-  //   i++;
-  //   currentIndex++;
+void compliancePage::getCardUI() {
     FlowLayout *flowLayout = new FlowLayout(cardContainer, -1, 20, 20);
+    int i = 0;
    for (const auto &sample : PollutantDataset::instance().data){
-        everyPollutantCard *pollutant_card = new everyPollutantCard(sample.getDeterminand().getLabel(), sample.getResult().getValue());
+        getAverage();
+        everyPollutantCard *pollutant_card = new everyPollutantCard(i,average);
         pollutant_card->setMaximumWidth(350);
         flowLayout->addWidget(pollutant_card);
-        // pollutantCards.push_back(pollutant_card);
     }
 }
 
@@ -214,76 +197,39 @@ std::string compliancePage::getLevel(Sample sample) {
   }
 }
 
-
-  // cardHolder.push_back(new QWidget());
-  // cardLayout.push_back(new QVBoxLayout());
-  // valueLabel.push_back(new QLabel()); 
-  // complianceLabel.push_back(new QLabel()); 
-  // cardLayout[i]->addWidget(valueLabel[i]);
-  // cardLayout[i]->addWidget(complianceLabel[i]);
-  // cardHolder[i]->setLayout(cardLayout[i]);
-  // valueLabel[i]->setText(QString::asprintf("The measurement has %f%s more than average", average - data.getResult().getValue(), data.getDeterminand().getUnit()));
-  // complianceLabel[i]->setText(QString::asprintf("The compliance indicates %s-level state", getLevel(data)));
-  // cards->addWidget(cardHolder[i], row, col);
-  // i++;
-  // currentIndex++;
-  everyPollutantCard::everyPollutantCard(const std::string &determinandLabel,
-                             double complianceLevel)
-    : QGroupBox(QString::fromStdString(determinandLabel)),
-      determinandLabel(determinandLabel), complianceLevel(complianceLevel) {
+everyPollutantCard::everyPollutantCard(int j, double averageTemp) : i(j), average(averageTemp) {
   setupUI();
-
   connect(&PollutantDataset::instance(), &PollutantDataset::dataUpdated, this,
           &everyPollutantCard::updateUI);
 }
 
 void everyPollutantCard::setupUI() {
   auto *layout = new QVBoxLayout();
-
+  timeLabel = new QLabel();
   valueLabel = new QLabel();
   complianceLabel = new QLabel();
 
+  layout->addWidget(timeLabel);
   layout->addWidget(valueLabel);
   layout->addWidget(complianceLabel);
 
-  setLayout(layout);
-  
+  this->setLayout(layout);
 }
 
-
-  void everyPollutantCard::updateUI() {
-  const auto &PollutantDataset = PollutantDataset::instance().data;
-
-  std::string unit;
-  double total = 0.0;
-  int count = 0;
-
-  for (const auto &sample : PollutantDataset) {
-    if (sample.getDeterminand().getLabel() == determinandLabel) {
-      unit = sample.getDeterminand().getUnit();
-      total += sample.getResult().getValue();
-      count++;
-    }
-  }
-  if (count > 0) {
-    double average = total / count;
-    valueLabel->setText(QString("Average Value: %1 %2")
-                            .arg(average)
-                            .arg(QString::fromStdString(unit)));
-
-    complianceLabel->setText(QString("Compliance Level: Under %1 %2")
-                                 .arg(complianceLevel)
-                                 .arg(QString::fromStdString(unit)));
-    if (average > complianceLevel) {
-      setProperty("complianceLevel", "low");
-    } else if (average == complianceLevel) {
-      setProperty("complianceLevel", "medium");
-    } else {
-      setProperty("complianceLevel", "high");
-    }
-  } else {
-    valueLabel->setText("Average Value: N/A");
-  }
+void everyPollutantCard::updateUI() {
+  std::string unit = PollutantDataset::instance().data[i].getDeterminand().getUnit();
+  timeLabel->setText(QString("Timeline : %1")
+                          .arg(QString::fromStdString(PollutantDataset::instance().data[i].getTime())));
+  valueLabel->setText(QString("Average Value: %1 %2")
+                          .arg(compliancePage::average)
+                          .arg(QString::fromStdString(unit)));
+  complianceLabel->setText(QString("Compliance Level is %1 at this point")
+                                .arg(QString::fromStdString(compliancePage::instance().getLevel(PollutantDataset::instance().data[i]))));
+  if (compliancePage::instance().getLevel(PollutantDataset::instance().data[i]) == "MAX") this->setStyleSheet("QLabel { color: darkred; }"); // darkred
+  if (compliancePage::instance().getLevel(PollutantDataset::instance().data[i]) == "High") this->setStyleSheet("QLabel { color: red; }"); //red
+  if (compliancePage::instance().getLevel(PollutantDataset::instance().data[i]) == "Medium") this->setStyleSheet("QLabel { color: rgb(255, 191, 0); }"); // amber
+  if (compliancePage::instance().getLevel(PollutantDataset::instance().data[i]) == "Low") this->setStyleSheet("QLabel { color: rgb(0, 255, 0); }"); // green
+  if (compliancePage::instance().getLevel(PollutantDataset::instance().data[i]) == "min") this->setStyleSheet("QLabel { color: darkgreen; }"); // darkgreen                     
   style()->unpolish(this);
   style()->polish(this);
 }
